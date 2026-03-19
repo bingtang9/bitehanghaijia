@@ -6,24 +6,200 @@
 <title>信息流自动推送教程 - 比特航海家</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #d4d4d4; line-height: 1.8; }
-.container { max-width: 720px; margin: 0 auto; padding: 40px 24px; }
-h1 { font-size: 1.8em; color: #fff; margin: 32px 0 16px; }
-h2 { font-size: 1.4em; color: #fff; margin: 28px 0 12px; border-bottom: 1px solid #333; padding-bottom: 8px; }
-h3 { font-size: 1.15em; color: #eee; margin: 20px 0 8px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0d1117; color: #c9d1d9; line-height: 1.8; }
+.container { max-width: 760px; margin: 0 auto; padding: 40px 24px; }
+h1 { font-size: 1.8em; color: #e6edf3; margin: 32px 0 16px; border-bottom: 1px solid #30363d; padding-bottom: 8px; }
+h2 { font-size: 1.4em; color: #e6edf3; margin: 28px 0 12px; border-bottom: 1px solid #21262d; padding-bottom: 8px; }
+h3 { font-size: 1.15em; color: #e6edf3; margin: 20px 0 8px; }
 p { margin: 12px 0; }
-blockquote { border-left: 3px solid #555; padding: 8px 16px; margin: 16px 0; color: #aaa; background: #111; border-radius: 4px; }
-li { margin-left: 24px; margin-bottom: 4px; }
-strong { color: #fff; }
-a { color: #6ba3f7; }
-.footer { margin-top: 48px; text-align: center; color: #555; font-size: 0.85em; }
-.back { display: inline-block; margin-bottom: 24px; color: #6ba3f7; text-decoration: none; }
+blockquote { border-left: 3px solid #3b82f6; padding: 8px 16px; margin: 16px 0; color: #8b949e; background: #161b22; border-radius: 4px; }
+ul, ol { margin: 12px 0; padding-left: 28px; }
+li { margin-bottom: 6px; }
+strong { color: #e6edf3; }
+em { color: #8b949e; }
+a { color: #58a6ff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { background: #161b22; padding: 2px 6px; border-radius: 4px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.9em; color: #c9d1d9; }
+pre { background: #161b22; padding: 16px; border-radius: 8px; overflow-x: auto; margin: 16px 0; border: 1px solid #30363d; }
+pre code { padding: 0; background: none; }
+hr { border: none; border-top: 1px solid #21262d; margin: 24px 0; }
+.footer { margin-top: 48px; text-align: center; color: #484f58; font-size: 0.85em; }
+.back { display: inline-block; margin-bottom: 24px; color: #58a6ff; text-decoration: none; }
+.back:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
 <div class="container">
 <a class="back" href="../">← 返回首页</a>
-<p><h1>用 RSSHub + OpenClaw 搭建个人信息流自动推送系统</h1></p><p><blockquote>Twitter 博主推文 + 深潮文章 → AI 分类总结 → 通过龙虾定时推送</blockquote></p><p><h2>为什么需要这套系统</h2></p><p>做投资、搞研究，Twitter 关注了上百个博主，每天产出的内容量非常大。但实际体验很差：</p><p><li><strong>时间线太嘈杂</strong>：博主发的内容质量参差不齐，深度分析和随手吐槽混在一起，高价值信息被淹没</li><br><li><strong>刷不过来</strong>：一天不看就积压几百条，根本没时间逐条过</li><br><li><strong>碎片化严重</strong>：很多博主喜欢发短推、转发、互动，真正有信息量的内容可能只占 10%</li><br><li><strong>错过重要信息</strong>：不是每次打开都能刷到关键推文，算法推荐也不靠谱</li><br><li><strong>跨平台割裂</strong>：Twitter 上有观点，深潮上有深度文章，来回切换很累</li></p><p>本质上是一个<strong>信息过载 + 筛选成本太高</strong>的问题。</p><p>这套系统的思路：让 AI 替你完成"刷 → 筛 → 读 → 总结"的全流程，你只看精华。</p><p><br><h2>这套系统能做什么</h2></p><p><li><strong>自动抓取</strong>：每小时从 Twitter 和深潮 TechFlow 拉取最新内容</li><br><li><strong>AI 总结</strong>：高质量内容给详细摘要，水贴直接跳过</li><br><li><strong>分类推送</strong>：投资相关和生活杂谈分开通过不同龙虾推送</li><br><li><strong>每日回顾</strong>：晚上一份全天要点总结，确保不漏重要信息</li></p><p>全部跑在本地机器上，零月费。</p><p><br><h2>整体架构</h2></p><p>```<br>信息源               抓取层                调度层              推送层<br>┌──────────┐   ┌──────────────┐   ┌──────────────┐   ┌──────────────┐<br>│ Twitter  │──→│ RSSHub       │──→│              │──→│ 龙虾 A        │<br>│ N 个博主 │   │ (Docker)     │   │  OpenClaw    │   │ (投资/金融)  │<br>└──────────┘   └──────────────┘   │  Cron 调度   │   └──────────────┘<br>┌──────────┐   ┌──────────────┐   │      +       │   ┌──────────────┐<br>│ 深潮     │──→│ Next.js RSC  │──→│  AI 分类总结 │──→│ 龙虾 B        │<br>│ TechFlow │   │ 接口         │   │              │   │ (科技/生活)  │<br>└──────────┘   └──────────────┘   └──────────────┘   └──────────────┘<br>```</p><p><br><h2>需要准备什么</h2></p><p><li>一台常开的机器（Mac mini / Linux 都行）</li><br><li>Docker</li><br><li>OpenClaw（开源个人 AI 助理框架）</li><br><li>至少一个龙虾（OpenClaw 支持对接多种聊天平台）</li><br><li>一个 Twitter 小号（提供 cookie，保护主号安全）</li></p><p><br><h2>第一步：部署 RSSHub</h2></p><p>RSSHub 是一个开源的 RSS 生成器，能把几百个网站转成 RSS 格式。我们用它来抓 Twitter。</p><p><strong>做什么：</strong> Docker 一行命令启动，把小号的 cookie 配进去就行。</p><p><strong>为什么用小号：</strong> Cookie 等于登录态，万一被 Twitter 检测到，封了也不心疼。</p><p><br><h2>第二步：创建 Twitter 私有 List</h2></p><p>这是整个方案的关键优化。</p><p><strong>问题：</strong> 直接逐个抓取 100+ 博主，Twitter 会严重限流——每个请求要等 20 秒以上，100 个人全部超时。</p><p><strong>解决：</strong> 把所有博主加到一个私有 List 里，通过 RSSHub 的 List 路由一次请求拿到所有人的最新推文（约 70 条）。</p><p><strong>怎么加：</strong> 用 Twitter 的 GraphQL API 批量添加，写个脚本循环跑，每个用户间隔 1.5 秒避免限流。实测 111 个博主全部成功零失败。</p><p><br><h2>第三步：抓取深潮 TechFlow 文章</h2></p><p><strong>问题：</strong> 深潮没有文章 RSS。它的 `rss.xml` 只有快讯（一两句话的短消息），深度文章没法直接订阅。</p><p><strong>解决：</strong> 深潮是 Next.js 构建的，向文章页发请求时带上 `RSC: 1` 这个 header，服务端会返回结构化数据。从中可以提取文章列表和正文内容。</p><p><strong>正文提取注意：</strong> 不同文章的正文格式不一样（直接 HTML / Unicode 转义 / meta description），脚本需要兼容三种格式。实测覆盖率 90%+。</p><p><br><h2>第四步：编写抓取脚本</h2></p><p>两个 Python 脚本，逻辑相同：</p><p><li>从数据源拉取最新内容</li><br><li>和本地 seen 文件比对去重</li><br><li>新内容追加到 pending 文件</li><br><li>seen 文件自动清理（保留最近 N 条，防止无限膨胀）</li></p><p>Twitter 脚本额外增加了 cookie 过期检测——抓取失败时写一个 error 标记文件，定时任务检测到后自动通知你换 cookie。</p><p><br><h2>第五步：配置定时任务</h2></p><p>用 OpenClaw 的 cron 功能，配 7 个定时任务：</p><p>| 任务 | 频率 | 做什么 |<br>|------|------|--------|<br>| 静默抓取 | 每小时 | 跑两个抓取脚本，存 pending，不打扰用户 |<br>| 分类推送 | 每天 5 次（08/11/14/17/20 点） | 读 pending → AI 分类总结 → 投资类推给龙虾 A，其他推给龙虾 B |<br>| 每日总结 | 每晚 22:00 | 综合全天信息，归纳关键主题，给出明日关注 |</p><p><strong>夜间策略：</strong> 23 点到早 8 点只抓不推，内容攒到早上一并发送。</p><p><br><h2>分类推送规则</h2></p><p><strong>投资龙虾推送的内容：</strong><br><li>加密货币行情、交易策略</li><br><li>宏观经济、美联储、利率政策</li><br><li>金融监管动态（SEC 等）</li><br><li>深潮金融类深度文章</li></p><p><strong>生活龙虾推送的内容：</strong><br><li>AI / 科技产品动态</li><br><li>社会观察、生活见闻</li><br><li>观点评论、行业杂谈</li><br><li>深潮科技类文章</li></p><p><strong>内容质量分级：</strong><br><li>高质量（深度分析、独家消息）→ 2-3 句详细摘要</li><br><li>普通推文 → 一句话概括</li><br><li>水贴 / 广告 → 直接跳过</li></p><p><strong>深潮文章：</strong> 单独板块「📝 深潮精选」，每篇附 3-4 句正文摘要，帮你判断是否值得点进去细读。</p><p><br><h2>推送效果示例</h2></p><p><h3>分类推送</h3></p><p>```<br>📰 投资摘要（14:00）</p><p>📊 市场动态<br>• 英伟达盘后大涨7%，GTC大会发布新一代GPU架构（@科技投资笔记）<br>  https://x.com/...</p><p>🔍 深度观点<br>• 美元指数跌破100，日元走强背后是套息交易平仓（@宏观老王）<br>  https://x.com/...</p><p>📝 深潮精选<br>• Stripe 如何用 20 亿押注 AI 支付基础设施<br>  从支付公司到AI时代的金融操作系统，战略转型解析。<br>  https://www.techflowpost.com/...<br>```</p><p><h3>每日总结</h3></p><p>```<br>📋 今日要点回顾</p><p>🔥 AI 芯片军备赛升级<br>英伟达发布新架构，AMD和博通同日回应，算力定价逻辑可能生变...</p><p>🔥 日元异动<br>套息交易平仓潮，多位博主分析对亚太市场的传导路径...</p><p>🔭 明日关注<br><li>美联储会议纪要措辞变化</li><br><li>苹果WWDC开发者预览</li></p><p>📎 值得细读<br><li>Stripe AI支付战略深度分析</li><br><li>全球算力供需格局研报</li><br>```</p><p><br><h2>踩坑记录</h2></p><p><li><strong>逐个博主抓取不可行</strong>：100+ 人逐个请求，Twitter 限流到每请求 20 秒，批量全超时。改用 List 路由一次搞定。</li></p><p><li><strong>Python urllib 调 Twitter API 返回 404</strong>：curl 正常但 Python 不行，原因是 urllib 不处理 cookie/redirect。批量加 List 成员最终用 bash + curl 实现。</li></p><p><li><strong>深潮没有文章 RSS</strong>：官方 `rss.xml` 只有快讯。深度文章通过 Next.js RSC 接口获取，但正文有三种不同格式需要兼容。</li></p><p><li><strong>Cookie 过期静默失败</strong>：RSSHub 抓取失败不会主动报错，必须在脚本层检测并主动告警。</li></p><p><li><strong>去重文件膨胀</strong>：长期运行 seen 文件会越来越大，需要定期清理只保留最近的记录。</li></p><p><br><h2>可扩展方向</h2></p><p><li><strong>更多信息源</strong>：PANews、Odaily 等有 RSS 的媒体可用相同模式接入</li><br><li><strong>多 cookie 轮换</strong>：RSSHub 支持多 cookie，降低单号压力</li><br><li><strong>持久化去重</strong>：把 `/tmp` 下的文件迁到持久目录，避免重启后全量重推</li><br><li><strong>关键词过滤</strong>：在抓取脚本中加白名单/黑名单，只保留感兴趣的内容</li><br><li><strong>微信公众号</strong>：目前没有靠谱的免费方案，等生态成熟后可接入</li><br></p>
+<h1>用 RSSHub + OpenClaw 搭建个人信息流自动推送系统</h1>
+<blockquote>
+<p>Twitter 博主推文 + 深潮文章 → AI 分类总结 → 通过龙虾定时推送</p>
+</blockquote>
+<h2>为什么需要这套系统</h2>
+<p>做投资、搞研究，Twitter 关注了上百个博主，每天产出的内容量非常大。但实际体验很差：</p>
+<ul>
+<li><strong>时间线太嘈杂</strong>：博主发的内容质量参差不齐，深度分析和随手吐槽混在一起，高价值信息被淹没</li>
+<li><strong>刷不过来</strong>：一天不看就积压几百条，根本没时间逐条过</li>
+<li><strong>碎片化严重</strong>：很多博主喜欢发短推、转发、互动，真正有信息量的内容可能只占 10%</li>
+<li><strong>错过重要信息</strong>：不是每次打开都能刷到关键推文，算法推荐也不靠谱</li>
+<li><strong>跨平台割裂</strong>：Twitter 上有观点，深潮上有深度文章，来回切换很累</li>
+</ul>
+<p>本质上是一个<strong>信息过载 + 筛选成本太高</strong>的问题。</p>
+<p>这套系统的思路：让 AI 替你完成&quot;刷 → 筛 → 读 → 总结&quot;的全流程，你只看精华。</p>
+<h2>这套系统能做什么</h2>
+<ul>
+<li><strong>自动抓取</strong>：每小时从 Twitter 和深潮 TechFlow 拉取最新内容</li>
+<li><strong>AI 总结</strong>：高质量内容给详细摘要，水贴直接跳过</li>
+<li><strong>分类推送</strong>：投资相关和生活杂谈分开通过不同龙虾推送</li>
+<li><strong>每日回顾</strong>：晚上一份全天要点总结，确保不漏重要信息</li>
+</ul>
+<p>全部跑在本地机器上，零月费。</p>
+<h2>整体架构</h2>
+<pre><code>信息源               抓取层                调度层              推送层
+┌──────────┐   ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
+│ Twitter  │──→│ RSSHub       │──→│              │──→│ 龙虾 A        │
+│ N 个博主 │   │ (Docker)     │   │  OpenClaw    │   │ (投资/金融)  │
+└──────────┘   └──────────────┘   │  Cron 调度   │   └──────────────┘
+┌──────────┐   ┌──────────────┐   │      +       │   ┌──────────────┐
+│ 深潮     │──→│ Next.js RSC  │──→│  AI 分类总结 │──→│ 龙虾 B        │
+│ TechFlow │   │ 接口         │   │              │   │ (科技/生活)  │
+└──────────┘   └──────────────┘   └──────────────┘   └──────────────┘
+</code></pre>
+<h2>需要准备什么</h2>
+<ul>
+<li>一台常开的机器（Mac mini / Linux 都行）</li>
+<li>Docker</li>
+<li>OpenClaw（开源个人 AI 助理框架）</li>
+<li>至少一个龙虾（OpenClaw 支持对接多种聊天平台）</li>
+<li>一个 Twitter 小号（提供 cookie，保护主号安全）</li>
+</ul>
+<h2>第一步：部署 RSSHub</h2>
+<p>RSSHub 是一个开源的 RSS 生成器，能把几百个网站转成 RSS 格式。我们用它来抓 Twitter。</p>
+<p><strong>做什么：</strong> Docker 一行命令启动，把小号的 cookie 配进去就行。</p>
+<p><strong>为什么用小号：</strong> Cookie 等于登录态，万一被 Twitter 检测到，封了也不心疼。</p>
+<h2>第二步：创建 Twitter 私有 List</h2>
+<p>这是整个方案的关键优化。</p>
+<p><strong>问题：</strong> 直接逐个抓取 100+ 博主，Twitter 会严重限流——每个请求要等 20 秒以上，100 个人全部超时。</p>
+<p><strong>解决：</strong> 把所有博主加到一个私有 List 里，通过 RSSHub 的 List 路由一次请求拿到所有人的最新推文（约 70 条）。</p>
+<p><strong>怎么加：</strong> 用 Twitter 的 GraphQL API 批量添加，写个脚本循环跑，每个用户间隔 1.5 秒避免限流。实测 111 个博主全部成功零失败。</p>
+<h2>第三步：抓取深潮 TechFlow 文章</h2>
+<p><strong>问题：</strong> 深潮没有文章 RSS。它的 <code>rss.xml</code> 只有快讯（一两句话的短消息），深度文章没法直接订阅。</p>
+<p><strong>解决：</strong> 深潮是 Next.js 构建的，向文章页发请求时带上 <code>RSC: 1</code> 这个 header，服务端会返回结构化数据。从中可以提取文章列表和正文内容。</p>
+<p><strong>正文提取注意：</strong> 不同文章的正文格式不一样（直接 HTML / Unicode 转义 / meta description），脚本需要兼容三种格式。实测覆盖率 90%+。</p>
+<h2>第四步：编写抓取脚本</h2>
+<p>两个 Python 脚本，逻辑相同：</p>
+<ol>
+<li>从数据源拉取最新内容</li>
+<li>和本地 seen 文件比对去重</li>
+<li>新内容追加到 pending 文件</li>
+<li>seen 文件自动清理（保留最近 N 条，防止无限膨胀）</li>
+</ol>
+<p>Twitter 脚本额外增加了 cookie 过期检测——抓取失败时写一个 error 标记文件，定时任务检测到后自动通知你换 cookie。</p>
+<h2>第五步：配置定时任务</h2>
+<p>用 OpenClaw 的 cron 功能，配 7 个定时任务：</p>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th>频率</th>
+<th>做什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>静默抓取</td>
+<td>每小时</td>
+<td>跑两个抓取脚本，存 pending，不打扰用户</td>
+</tr>
+<tr>
+<td>分类推送</td>
+<td>每天 5 次（08/11/14/17/20 点）</td>
+<td>读 pending → AI 分类总结 → 投资类推给龙虾 A，其他推给龙虾 B</td>
+</tr>
+<tr>
+<td>每日总结</td>
+<td>每晚 22:00</td>
+<td>综合全天信息，归纳关键主题，给出明日关注</td>
+</tr>
+</tbody></table>
+<p><strong>夜间策略：</strong> 23 点到早 8 点只抓不推，内容攒到早上一并发送。</p>
+<h2>分类推送规则</h2>
+<p><strong>投资龙虾推送的内容：</strong></p>
+<ul>
+<li>加密货币行情、交易策略</li>
+<li>宏观经济、美联储、利率政策</li>
+<li>金融监管动态（SEC 等）</li>
+<li>深潮金融类深度文章</li>
+</ul>
+<p><strong>生活龙虾推送的内容：</strong></p>
+<ul>
+<li>AI / 科技产品动态</li>
+<li>社会观察、生活见闻</li>
+<li>观点评论、行业杂谈</li>
+<li>深潮科技类文章</li>
+</ul>
+<p><strong>内容质量分级：</strong></p>
+<ul>
+<li>高质量（深度分析、独家消息）→ 2-3 句详细摘要</li>
+<li>普通推文 → 一句话概括</li>
+<li>水贴 / 广告 → 直接跳过</li>
+</ul>
+<p><strong>深潮文章：</strong> 单独板块「📝 深潮精选」，每篇附 3-4 句正文摘要，帮你判断是否值得点进去细读。</p>
+<h2>推送效果示例</h2>
+<h3>分类推送</h3>
+<pre><code>📰 投资摘要（14:00）
+
+📊 市场动态
+• 英伟达盘后大涨7%，GTC大会发布新一代GPU架构（@科技投资笔记）
+  https://x.com/...
+
+🔍 深度观点
+• 美元指数跌破100，日元走强背后是套息交易平仓（@宏观老王）
+  https://x.com/...
+
+📝 深潮精选
+• Stripe 如何用 20 亿押注 AI 支付基础设施
+  从支付公司到AI时代的金融操作系统，战略转型解析。
+  https://www.techflowpost.com/...
+</code></pre>
+<h3>每日总结</h3>
+<pre><code>📋 今日要点回顾
+
+🔥 AI 芯片军备赛升级
+英伟达发布新架构，AMD和博通同日回应，算力定价逻辑可能生变...
+
+🔥 日元异动
+套息交易平仓潮，多位博主分析对亚太市场的传导路径...
+
+🔭 明日关注
+- 美联储会议纪要措辞变化
+- 苹果WWDC开发者预览
+
+📎 值得细读
+1. Stripe AI支付战略深度分析
+2. 全球算力供需格局研报
+</code></pre>
+<h2>踩坑记录</h2>
+<ol>
+<li><p><strong>逐个博主抓取不可行</strong>：100+ 人逐个请求，Twitter 限流到每请求 20 秒，批量全超时。改用 List 路由一次搞定。</p>
+</li>
+<li><p><strong>Python urllib 调 Twitter API 返回 404</strong>：curl 正常但 Python 不行，原因是 urllib 不处理 cookie/redirect。批量加 List 成员最终用 bash + curl 实现。</p>
+</li>
+<li><p><strong>深潮没有文章 RSS</strong>：官方 <code>rss.xml</code> 只有快讯。深度文章通过 Next.js RSC 接口获取，但正文有三种不同格式需要兼容。</p>
+</li>
+<li><p><strong>Cookie 过期静默失败</strong>：RSSHub 抓取失败不会主动报错，必须在脚本层检测并主动告警。</p>
+</li>
+<li><p><strong>去重文件膨胀</strong>：长期运行 seen 文件会越来越大，需要定期清理只保留最近的记录。</p>
+</li>
+</ol>
+<h2>可扩展方向</h2>
+<ul>
+<li><strong>更多信息源</strong>：PANews、Odaily 等有 RSS 的媒体可用相同模式接入</li>
+<li><strong>多 cookie 轮换</strong>：RSSHub 支持多 cookie，降低单号压力</li>
+<li><strong>持久化去重</strong>：把 <code>/tmp</code> 下的文件迁到持久目录，避免重启后全量重推</li>
+<li><strong>关键词过滤</strong>：在抓取脚本中加白名单/黑名单，只保留感兴趣的内容</li>
+<li><strong>微信公众号</strong>：目前没有靠谱的免费方案，等生态成熟后可接入</li>
+</ul>
+
 <div class="footer">比特航海家出品</div>
 </div>
 </body>
