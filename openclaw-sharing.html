@@ -156,7 +156,7 @@
         <h1 class="reveal"><span class="title-main typewriter-cursor" id="typeTarget"></span></h1>
         <p class="title-sub reveal">OpenClaw（小龙虾）实践分享</p>
     </div>
-    <div class="slide-num mono">01 / 16</div>
+    <div class="slide-num mono">01 / 18</div>
 </section>
 
 <!-- ===================== SLIDE 2: WHAT IS OPENCLAW ===================== -->
@@ -176,7 +176,7 @@
             <div class="fcard"><span class="ci">🦞</span><div class="ct accent-red">OpenClaw</div><div class="cd">住在电脑里的员工，7×24 运行，主动给你推消息</div></div>
         </div>
     </div>
-    <div class="slide-num mono">02 / 16</div>
+    <div class="slide-num mono">02 / 18</div>
 </section>
 
 <!-- ===================== SLIDE 3: ARCHITECTURE ===================== -->
@@ -194,7 +194,7 @@
             <div class="fcard"><span class="ci">🎓</span><div class="ct accent-red">英语角</div><div class="cd">学习陪练 · 每日任务 · 打卡</div></div>
         </div>
     </div>
-    <div class="slide-num mono">03 / 16</div>
+    <div class="slide-num mono">03 / 18</div>
 </section>
 
 <!-- ===================== SLIDE 4: NEW EMPLOYEE ===================== -->
@@ -212,7 +212,7 @@
             <em>「招人最贵的不是工资，是管理成本」</em>
         </div>
     </div>
-    <div class="slide-num mono">04 / 16</div>
+    <div class="slide-num mono">04 / 18</div>
 </section>
 
 <!-- ===================== SLIDE 5: TRAINING ===================== -->
@@ -232,7 +232,7 @@
             <em>「配置越细致，员工越好用——就像带新人，前期投入决定后期效率」</em>
         </div>
     </div>
-    <div class="slide-num mono">05 / 16</div>
+    <div class="slide-num mono">05 / 18</div>
 </section>
 
 <!-- ===================== SLIDE 6: SHOWCASE ===================== -->
@@ -249,40 +249,46 @@
             <div class="fcard"><span class="ci">🎨</span><div class="ct accent-red">内容产出</div><div class="cd">信息图 + PPT + 教程 + 合同审查</div></div>
         </div>
     </div>
-    <div class="slide-num mono">06 / 16</div>
+    <div class="slide-num mono">06 / 18</div>
 </section>
 
-<!-- ===================== SLIDE 7: INFO + EXCHANGE ===================== -->
+<!-- ===================== SLIDE 7: INFO FLOW ===================== -->
 <section class="slide bg-grid bg-mesh-b" data-slide="6">
     <div class="slide-content">
         <span class="section-label reveal">Data Flow</span>
-        <h2 class="reveal"><span class="accent-blue">信息流</span> & 公告<span class="accent-red">监控</span></h2>
-        <div class="two-col reveal">
-            <div>
-                <h3 style="margin-bottom:clamp(0.3rem,0.8vw,0.5rem)">📡 信息流系统</h3>
-                <ul class="blist blue">
-                    <li>Twitter <strong>111 个 KOL</strong> + 深潮</li>
-                    <li>RSSHub + Twitter List 一次抓取</li>
-                    <li>AI 智能分流，每天 5 次推送</li>
-                    <li>自动过滤水贴，零人工干预</li>
-                </ul>
-            </div>
-            <div>
-                <h3 style="margin-bottom:clamp(0.3rem,0.8vw,0.5rem)">🔔 交易所公告</h3>
-                <ul class="blist">
-                    <li>四所实时监控（每 3 分钟）</li>
-                    <li><span class="tag red">BN</span> <span class="tag red">OKX</span> <span class="tag">Bybit</span> <span class="tag">Bitget</span></li>
-                    <li>噪音自动跳过，重要公告推送</li>
-                    <li>自动生成信息图 + 收益分析</li>
-                </ul>
-            </div>
+        <h2 class="reveal"><span class="accent-blue">信息流</span>系统</h2>
+        <ul class="blist reveal">
+            <li>自建 Twitter 信息流：<strong>111 个 KOL</strong> + 深潮 TechFlow</li>
+            <li><strong>RSSHub Docker</strong> + Twitter List 一次抓取</li>
+            <li>AI 智能分流后推送至<strong>专属信息流频道</strong></li>
+            <li>每天 <span class="mono">5</span> 次定时推送，自动过滤水贴</li>
+            <li><strong>零人工干预</strong>，全自动运行</li>
+        </ul>
+        <div class="hbox reveal">
+            <em>「信息不再淹没你，而是为你精选」</em>
         </div>
     </div>
-    <div class="slide-num mono">07 / 16</div>
+    <div class="slide-num mono">07 / 18</div>
+</section>
+
+<!-- ===================== SLIDE 8: EXCHANGE MONITOR ===================== -->
+<section class="slide bg-grid bg-mesh-r" data-slide="7">
+    <div class="slide-content">
+        <span class="section-label reveal">Monitoring</span>
+        <h2 class="reveal">交易所<span class="accent-red">公告监控</span></h2>
+        <ul class="blist reveal">
+            <li>实时监控四大交易所（每 <span class="mono">3</span> 分钟）</li>
+            <li>覆盖：<span class="tag red">Binance</span> <span class="tag red">OKX</span> <span class="tag">Bybit</span> <span class="tag">Bitget</span></li>
+            <li>智能过滤：合约调参等噪音<strong>自动跳过</strong></li>
+            <li>自动推送到私人频道 + 私聊</li>
+            <li>重要公告自动生成<strong>信息图 + 收益分析</strong></li>
+        </ul>
+    </div>
+    <div class="slide-num mono">08 / 18</div>
 </section>
 
 <!-- ===================== SLIDE 6: CRON TASKS ===================== -->
-<section class="slide bg-grid bg-mesh-b" data-slide="7">
+<section class="slide bg-grid bg-mesh-b" data-slide="8">
     <div class="slide-content">
         <span class="section-label reveal">Automation</span>
         <h2 class="reveal">自动化<span class="accent-blue">定时任务</span></h2>
@@ -312,11 +318,11 @@
             <em>「能用脚本的不用 AI，省 token」</em>
         </div>
     </div>
-    <div class="slide-num mono">08 / 16</div>
+    <div class="slide-num mono">09 / 18</div>
 </section>
 
 <!-- ===================== SLIDE 7: SECURITY ===================== -->
-<section class="slide bg-grid bg-mesh-r" data-slide="8">
+<section class="slide bg-grid bg-mesh-r" data-slide="9">
     <div class="slide-content">
         <span class="section-label reveal">Security</span>
         <h2 class="reveal"><span class="accent-red">安全</span>体系</h2>
@@ -328,71 +334,65 @@
             <li>数据目录清晰隔离，<strong>权限最小化</strong></li>
         </ul>
     </div>
-    <div class="slide-num mono">09 / 16</div>
+    <div class="slide-num mono">10 / 18</div>
 </section>
 
-<!-- ===================== SLIDE 9: KNOWLEDGE + INVESTMENT ===================== -->
-<section class="slide bg-grid bg-mesh-r" data-slide="9">
+<!-- ===================== SLIDE 11: KNOWLEDGE ===================== -->
+<section class="slide bg-grid bg-mesh-r" data-slide="10">
     <div class="slide-content">
-        <span class="section-label reveal">Knowledge & Investment</span>
-        <h2 class="reveal"><span class="accent-red">知识管理</span> & <span class="accent-blue">投资辅助</span></h2>
-        <div class="two-col reveal">
-            <div>
-                <h3 style="margin-bottom:clamp(0.3rem,0.8vw,0.5rem)">📚 知识管理</h3>
-                <ul class="blist">
-                    <li><strong>文渊阁</strong>：读书笔记 + 关联分析</li>
-                    <li>全局记忆 + Agent 独立记忆 + 每日日志</li>
-                    <li>Obsidian 双向同步 + GitHub Pages</li>
-                </ul>
-            </div>
-            <div>
-                <h3 style="margin-bottom:clamp(0.3rem,0.8vw,0.5rem)">💹 投资辅助</h3>
-                <ul class="blist blue">
-                    <li><strong>军机处</strong>：BTC 定投日报（每天 10:00）</li>
-                    <li>代币监控：价格预警 + 持仓追踪</li>
-                    <li>YouTube 4h 会议 → 20min 转写摘要</li>
-                </ul>
-            </div>
-        </div>
+        <span class="section-label reveal">Knowledge</span>
+        <h2 class="reveal"><span class="accent-red">知识</span>管理</h2>
+        <ul class="blist reveal">
+            <li><strong>文渊阁</strong>：读书笔记，书籍关联分析</li>
+            <li>记忆架构：<span class="tag">全局 MEMORY</span> + <span class="tag">Agent 独立记忆</span> + <span class="tag red">每日日志</span></li>
+            <li><strong>Obsidian 双向同步</strong> + GitHub Pages 发布</li>
+            <li>自动整理、自动归档</li>
+        </ul>
         <div class="hbox reveal">
-            <em>「知识在系统里，决策有依据」</em>
+            <em>「知识不在脑中，在系统里」</em>
         </div>
     </div>
-    <div class="slide-num mono">10 / 16</div>
+    <div class="slide-num mono">11 / 18</div>
 </section>
 
-<!-- ===================== SLIDE 10: ENGLISH + FEISHU ===================== -->
-<section class="slide bg-grid bg-mesh-b" data-slide="10">
+<!-- ===================== SLIDE 12: INVESTMENT ===================== -->
+<section class="slide bg-grid bg-mesh-b" data-slide="11">
     <div class="slide-content">
-        <span class="section-label reveal">Learning & Integration</span>
-        <h2 class="reveal"><span class="accent-red">英语学习</span> & <span class="accent-blue">飞书集成</span></h2>
-        <div class="two-col reveal">
-            <div>
-                <h3 style="margin-bottom:clamp(0.3rem,0.8vw,0.5rem)">🗣️ 英语学习</h3>
-                <ul class="blist">
-                    <li><strong>英语角 Bot</strong>：每天推送学习任务</li>
-                    <li>08:00 课程提醒 + 19:00 打卡</li>
-                    <li>Peppa Pig 不开字幕看剧法</li>
-                </ul>
-            </div>
-            <div>
-                <h3 style="margin-bottom:clamp(0.3rem,0.8vw,0.5rem)">📎 飞书集成</h3>
-                <ul class="blist blue">
-                    <li>飞书<strong>全套能力</strong>：文档、表格、日历、任务</li>
-                    <li>用户身份操作（OAuth），不是机器人</li>
-                    <li>读写文档、多维表格、消息搜索</li>
-                </ul>
-            </div>
+        <span class="section-label reveal">Investment</span>
+        <h2 class="reveal"><span class="accent-blue">投资</span>辅助</h2>
+        <ul class="blist reveal">
+            <li><strong>军机处</strong>：BTC 定投日报，每天 <span class="mono">10:00</span> 推送</li>
+            <li>代币监控：价格预警、持仓追踪</li>
+            <li>YouTube 视频总结：<span class="mono">4</span> 小时投资会议 → 分段文字摘要</li>
+            <li>本地语音转写（<span class="tag">mlx-whisper</span>），<strong>零 API 费用</strong></li>
+        </ul>
+        <div class="hbox reveal">
+            <em>「4 小时会议，20 分钟转写，5 分钟读完」</em>
         </div>
+    </div>
+    <div class="slide-num mono">12 / 18</div>
+</section>
+
+<!-- ===================== SLIDE 13: ENGLISH ===================== -->
+<section class="slide bg-grid bg-mesh-r" data-slide="12">
+    <div class="slide-content">
+        <span class="section-label reveal">Learning</span>
+        <h2 class="reveal"><span class="accent-red">英语</span>学习</h2>
+        <ul class="blist reveal">
+            <li><strong>英语角 Bot</strong>：每天推送学习任务</li>
+            <li>许岑方法论：语言是能力不是知识，核心是<strong>「猜」</strong></li>
+            <li>Peppa Pig <strong>不开字幕</strong>看剧法</li>
+            <li>每天 <span class="mono">08:00</span> 课程提醒 + <span class="mono">19:00</span> 打卡 + 周日复盘</li>
+        </ul>
         <div class="hbox reveal">
             <em>「AI 不只帮你工作，还帮你成长」</em>
         </div>
     </div>
-    <div class="slide-num mono">11 / 16</div>
+    <div class="slide-num mono">13 / 18</div>
 </section>
 
 <!-- ===================== SLIDE 14: COST ===================== -->
-<section class="slide bg-grid bg-mesh-b" data-slide="11">
+<section class="slide bg-grid bg-mesh-b" data-slide="13">
     <div class="slide-content">
         <span class="section-label reveal">Cost</span>
         <h2 class="reveal">成本与<span class="accent-blue">效率</span></h2>
@@ -406,11 +406,11 @@
             <em>「最贵的不是 AI，是你的时间」</em>
         </div>
     </div>
-    <div class="slide-num mono">12 / 16</div>
+    <div class="slide-num mono">14 / 18</div>
 </section>
 
 <!-- ===================== SLIDE 21: MAKE MONEY ===================== -->
-<section class="slide bg-grid bg-mesh" data-slide="12">
+<section class="slide bg-grid bg-mesh" data-slide="14">
     <div class="slide-content">
         <span class="section-label reveal">Value</span>
         <h2 class="reveal">小龙虾能不能<span class="accent-red">赚钱</span>？</h2>
@@ -422,11 +422,11 @@
             <em>「不是小龙虾在帮你赚钱，是你赚钱的效率提高了」</em>
         </div>
     </div>
-    <div class="slide-num mono">13 / 16</div>
+    <div class="slide-num mono">15 / 18</div>
 </section>
 
 <!-- ===================== SLIDE 22: THINK AHEAD ===================== -->
-<section class="slide bg-grid bg-mesh-r" data-slide="13">
+<section class="slide bg-grid bg-mesh-r" data-slide="15">
     <div class="slide-content">
         <span class="section-label reveal">Scenarios</span>
         <h2 class="reveal">没有小龙虾的<span class="accent-blue">使用场景</span></h2>
@@ -441,11 +441,11 @@
             <em>「只有你想不到，没有他做不到」</em>
         </div>
     </div>
-    <div class="slide-num mono">14 / 16</div>
+    <div class="slide-num mono">16 / 18</div>
 </section>
 
 <!-- ===================== SLIDE 23: SUMMARY ===================== -->
-<section class="slide bg-grid bg-mesh-r" data-slide="14">
+<section class="slide bg-grid bg-mesh-r" data-slide="16">
     <div class="slide-content">
         <span class="section-label reveal">Summary</span>
         <h2 class="reveal"><span class="accent-red">总结</span></h2>
@@ -459,11 +459,11 @@
             <em>「让'以后再自动化'变成现在就实现」 —— OpenClaw 🦞</em>
         </div>
     </div>
-    <div class="slide-num mono">15 / 16</div>
+    <div class="slide-num mono">17 / 18</div>
 </section>
 
 <!-- ===================== SLIDE 20: QA ===================== -->
-<section class="slide title-slide bg-grid scanline bg-mesh" data-slide="15">
+<section class="slide title-slide bg-grid scanline bg-mesh" data-slide="17">
     <div class="slide-content">
         <h1 class="qa-title reveal">Questions?</h1>
         <ul class="qa-links reveal">
@@ -473,7 +473,7 @@
         </ul>
         <p class="title-date reveal" style="margin-top:clamp(1rem,2vh,2rem)">🦞 感谢聆听</p>
     </div>
-    <div class="slide-num mono">16 / 16</div>
+    <div class="slide-num mono">18 / 18</div>
 </section>
 
 <!-- ===================== JAVASCRIPT ===================== -->
