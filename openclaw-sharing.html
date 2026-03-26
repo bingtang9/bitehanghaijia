@@ -132,7 +132,7 @@
         .progress-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--accent-red),var(--accent-blue));z-index:200;transition:width 0.3s var(--ease-out-expo);width:0}
 
         /* === WATERMARK === */
-        .watermark{position:fixed;bottom:clamp(0.2rem,0.6vh,0.4rem);right:clamp(0.4rem,1.2vw,0.8rem);font-family:var(--font-mono);font-size:clamp(0.45rem,0.6vw,0.55rem);color:var(--text-dim);z-index:100;opacity:0.4}
+        .watermark{position:fixed;bottom:clamp(0.3rem,0.8vh,0.5rem);left:clamp(0.4rem,1.2vw,0.8rem);font-family:var(--font-mono);font-size:clamp(0.55rem,0.8vw,0.7rem);color:var(--text-dim);z-index:100;opacity:0.5}
 
         /* === RESPONSIVE === */
         @media(max-height:700px){:root{--slide-padding:clamp(0.75rem,3vw,2rem);--content-gap:clamp(0.35rem,1.2vw,0.8rem);--title-size:clamp(1.5rem,5vw,3rem);--h2-size:clamp(1.1rem,3vw,1.7rem)}}
@@ -156,7 +156,7 @@
         <h1 class="reveal"><span class="title-main typewriter-cursor" id="typeTarget"></span></h1>
         <p class="title-sub reveal">OpenClaw（小龙虾）实践分享</p>
     </div>
-    <div class="slide-num mono">01 / 22</div>
+    <div class="slide-num mono">01 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 2: WHAT IS OPENCLAW ===================== -->
@@ -171,11 +171,12 @@
             <li>多平台接入 <span class="tag">Telegram</span> <span class="tag">飞书</span> <span class="tag">Discord</span></li>
             <li>官网 → <span class="mono accent-blue">openclaw.ai</span></li>
         </ul>
-        <div class="hbox reveal">
-            <em>「一个人 + 一台 Mac mini + OpenClaw = 一支 AI 团队」</em>
+        <div class="card-grid cols-2 reveal-s" style="margin-top:var(--content-gap)">
+            <div class="fcard"><span class="ci">💬</span><div class="ct">ChatGPT</div><div class="cd">你问它答，关掉就没了</div></div>
+            <div class="fcard"><span class="ci">🦞</span><div class="ct accent-red">OpenClaw</div><div class="cd">住在电脑里的员工，7×24 运行，主动给你推消息</div></div>
         </div>
     </div>
-    <div class="slide-num mono">02 / 22</div>
+    <div class="slide-num mono">02 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 3: ARCHITECTURE ===================== -->
@@ -193,14 +194,14 @@
             <div class="fcard"><span class="ci">🎓</span><div class="ct accent-red">英语角</div><div class="cd">学习陪练 · 每日任务 · 打卡</div></div>
         </div>
     </div>
-    <div class="slide-num mono">03 / 22</div>
+    <div class="slide-num mono">03 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 4: NEW EMPLOYEE ===================== -->
 <section class="slide bg-grid bg-mesh" data-slide="3">
     <div class="slide-content">
         <span class="section-label reveal">Analogy</span>
-        <h2 class="reveal">相当于招了一个<span class="accent-red">新员工</span></h2>
+        <h2 class="reveal">住在电脑里的<span class="accent-red">员工</span></h2>
         <div class="card-grid cols-2 reveal-s">
             <div class="fcard"><span class="ci">🧠</span><div class="ct accent-blue">资深专家</div><div class="cd">每一个专业都没有短板，市面上这样的人很难招到</div></div>
             <div class="fcard"><span class="ci">💰</span><div class="ct accent-red">月费 $100-200</div><div class="cd">vs 真人多岗位月薪数万，一个顶六个</div></div>
@@ -211,27 +212,25 @@
             <em>「招人最贵的不是工资，是管理成本」</em>
         </div>
     </div>
-    <div class="slide-num mono">04 / 22</div>
+    <div class="slide-num mono">04 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 5: TRAINING ===================== -->
 <section class="slide bg-grid bg-mesh-r" data-slide="4">
     <div class="slide-content">
-        <span class="section-label reveal">Training</span>
-        <h2 class="reveal">训练你的<span class="accent-blue">"新员工"</span></h2>
-        <ul class="blist reveal">
-            <li>新配置相当于<strong>一张白纸</strong>，对你的工作方式一无所知</li>
-            <li>需要长期训练，不断告诉他<strong>边界和规矩</strong></li>
-            <li>训练成果<strong>永不丢失</strong>——写进记忆文件，重启也记得</li>
-            <li><strong>可复制</strong>：一个 agent 的规范同步给所有 agent</li>
-            <li>搭配 <span class="tag">Skill</span> = 给员工报培训班，<strong>即装即用</strong></li>
-            <li>越用越顺，越来越懂你的<strong>工作方式和偏好</strong></li>
-        </ul>
+        <span class="section-label reveal">Setup</span>
+        <h2 class="reveal">配置你的<span class="accent-blue">"员工"</span></h2>
+        <div class="card-grid cols-2 reveal-s">
+            <div class="fcard"><span class="ci">👤</span><div class="ct accent-blue">User.md</div><div class="cd">告诉它<strong>你是谁</strong>：你的身份、偏好、工作习惯、沟通方式。相当于给新员工做入职介绍</div></div>
+            <div class="fcard"><span class="ci">🧠</span><div class="ct accent-red">Memory.md</div><div class="cd">它的<strong>长期记忆</strong>：记住你的规则、决策、经验教训。重启不丢失，越用越懂你</div></div>
+            <div class="fcard"><span class="ci">💓</span><div class="ct accent-blue">Heartbeat.md</div><div class="cd">定时<strong>主动巡检</strong>清单：检查什么、推送什么、什么时候安静。不用你催，它自己盯着</div></div>
+            <div class="fcard"><span class="ci">🎓</span><div class="ct accent-red">Skill</div><div class="cd">给员工报<strong>培训班</strong>：即装即用的专业能力包，装上就会，可叠加</div></div>
+        </div>
         <div class="hbox reveal">
-            <em>「训练成果写进记忆，永不丢失」</em>
+            <em>「配置越细致，员工越好用——就像带新人，前期投入决定后期效率」</em>
         </div>
     </div>
-    <div class="slide-num mono">05 / 22</div>
+    <div class="slide-num mono">05 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 6: SHOWCASE ===================== -->
@@ -248,7 +247,7 @@
             <div class="fcard"><span class="ci">🎨</span><div class="ct accent-red">内容产出</div><div class="cd">信息图 + PPT + 教程 + 合同审查</div></div>
         </div>
     </div>
-    <div class="slide-num mono">06 / 22</div>
+    <div class="slide-num mono">06 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 7: INFO FLOW ===================== -->
@@ -267,7 +266,7 @@
             <em>「信息不再淹没你，而是为你精选」</em>
         </div>
     </div>
-    <div class="slide-num mono">07 / 22</div>
+    <div class="slide-num mono">07 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 5: EXCHANGE MONITOR ===================== -->
@@ -283,7 +282,7 @@
             <li>重要公告自动生成<strong>信息图 + 收益分析</strong></li>
         </ul>
     </div>
-    <div class="slide-num mono">08 / 22</div>
+    <div class="slide-num mono">08 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 6: CRON TASKS ===================== -->
@@ -317,7 +316,7 @@
             <em>「能用脚本的不用 AI，省 token」</em>
         </div>
     </div>
-    <div class="slide-num mono">09 / 22</div>
+    <div class="slide-num mono">09 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 7: SECURITY ===================== -->
@@ -333,7 +332,7 @@
             <li>数据目录清晰隔离，<strong>权限最小化</strong></li>
         </ul>
     </div>
-    <div class="slide-num mono">10 / 22</div>
+    <div class="slide-num mono">10 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 8: IMAGE GENERATION ===================== -->
@@ -351,7 +350,7 @@
             <em>「不用 Midjourney，代码即设计」</em>
         </div>
     </div>
-    <div class="slide-num mono">11 / 22</div>
+    <div class="slide-num mono">11 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 9: KNOWLEDGE ===================== -->
@@ -369,7 +368,7 @@
             <em>「知识不在脑中，在系统里」</em>
         </div>
     </div>
-    <div class="slide-num mono">12 / 22</div>
+    <div class="slide-num mono">12 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 10: INVESTMENT ===================== -->
@@ -387,7 +386,7 @@
             <em>「4 小时会议，20 分钟转写，5 分钟读完」</em>
         </div>
     </div>
-    <div class="slide-num mono">13 / 22</div>
+    <div class="slide-num mono">13 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 11: ENGLISH ===================== -->
@@ -405,7 +404,7 @@
             <em>「AI 不只帮你工作，还帮你成长」</em>
         </div>
     </div>
-    <div class="slide-num mono">14 / 22</div>
+    <div class="slide-num mono">14 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 12: FEISHU ===================== -->
@@ -419,7 +418,7 @@
             <li>支持：读写文档、多维表格、日程管理、消息搜索</li>
         </ul>
     </div>
-    <div class="slide-num mono">15 / 22</div>
+    <div class="slide-num mono">15 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 14: COST ===================== -->
@@ -437,46 +436,7 @@
             <em>「最贵的不是 AI，是你的时间」</em>
         </div>
     </div>
-    <div class="slide-num mono">16 / 22</div>
-</section>
-
-<!-- ===================== SLIDE 17: AI AGE ===================== -->
-<section class="slide bg-grid bg-mesh-b" data-slide="16">
-    <div class="slide-content" style="align-items:center;text-align:center">
-        <span class="section-label reveal">Concept</span>
-        <h2 class="reveal" style="font-size:var(--h2-size)">你的 <span class="accent-red">AI 年龄</span>，几岁？</h2>
-        <p class="reveal" style="font-size:clamp(0.8rem,1.4vw,1.05rem);color:var(--text-secondary);max-width:36em;margin:0 auto;line-height:1.7">
-            不是你出生多少年，而是你<strong style="color:var(--text-primary)">真正把 AI 当成日常工具用起来</strong>，到今天，有几岁。
-        </p>
-        <div class="card-grid cols-2 reveal-s" style="max-width:42em;margin:var(--content-gap) auto 0">
-            <div class="fcard"><span class="ci">👶</span><div class="ct accent-blue">AI 年龄 0 岁</div><div class="cd">听说过 ChatGPT，偶尔打开玩玩</div></div>
-            <div class="fcard"><span class="ci">🧒</span><div class="ct accent-red">AI 年龄 1-2 岁</div><div class="cd">日常用 AI 搜索、写作、翻译</div></div>
-            <div class="fcard"><span class="ci">🧑‍💻</span><div class="ct accent-blue">AI 年龄 3-5 岁</div><div class="cd">用 AI 编程、搭建自动化工作流</div></div>
-            <div class="fcard"><span class="ci">🦞</span><div class="ct accent-red">AI 年龄 5+ 岁</div><div class="cd">部署 Agent 集群，AI 替你 7×24 运行</div></div>
-        </div>
-        <div class="hbox reveal" style="max-width:36em;margin:var(--content-gap) auto 0">
-            <em>「在 AI 年龄面前，生理年龄不重要——起跑线对所有人都一样」</em>
-        </div>
-    </div>
-    <div class="slide-num mono">17 / 22</div>
-</section>
-
-<!-- ===================== SLIDE 18: AI INSIGHTS ===================== -->
-<section class="slide bg-grid bg-mesh-r" data-slide="17">
-    <div class="slide-content">
-        <span class="section-label reveal">Insights</span>
-        <h2 class="reveal">AI 行业<span class="accent-red">感悟</span>与布局</h2>
-        <div class="card-grid cols-2 reveal-s">
-            <div class="fcard"><span class="ci">🔄</span><div class="ct accent-blue">从聊天到操作系统</div><div class="cd">AI 不只是问答工具，而是 7×24 运行的个人操作系统</div></div>
-            <div class="fcard"><span class="ci">🧩</span><div class="ct accent-red">会用 ≠ 会部署</div><div class="cd">能部署 Agent 搭建自动化的人不到 1%，这就是机会</div></div>
-            <div class="fcard"><span class="ci">📚</span><div class="ct accent-blue">教程 & 社群</div><div class="cd">AI 使用教程、部署服务、Skill 评测——低门槛切入</div></div>
-            <div class="fcard"><span class="ci">🏗️</span><div class="ct accent-red">垂直 Agent</div><div class="cd">针对特定行业做定制 Agent：法律、财务、医疗、投研</div></div>
-        </div>
-        <div class="hbox reveal">
-            <em>「最好的学习方式是实践，最好的分享素材就是你的实践」</em>
-        </div>
-    </div>
-    <div class="slide-num mono">18 / 22</div>
+    <div class="slide-num mono">16 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 21: MAKE MONEY ===================== -->
@@ -492,7 +452,7 @@
             <em>「不是小龙虾在帮你赚钱，是你赚钱的效率提高了」</em>
         </div>
     </div>
-    <div class="slide-num mono">19 / 22</div>
+    <div class="slide-num mono">17 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 22: THINK AHEAD ===================== -->
@@ -511,7 +471,7 @@
             <em>「只有你想不到，没有他做不到」</em>
         </div>
     </div>
-    <div class="slide-num mono">20 / 22</div>
+    <div class="slide-num mono">18 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 23: SUMMARY ===================== -->
@@ -529,7 +489,7 @@
             <em>「让'以后再自动化'变成现在就实现」 —— OpenClaw 🦞</em>
         </div>
     </div>
-    <div class="slide-num mono">21 / 22</div>
+    <div class="slide-num mono">19 / 20</div>
 </section>
 
 <!-- ===================== SLIDE 20: QA ===================== -->
@@ -543,7 +503,7 @@
         </ul>
         <p class="title-date reveal" style="margin-top:clamp(1rem,2vh,2rem)">🦞 感谢聆听</p>
     </div>
-    <div class="slide-num mono">22 / 22</div>
+    <div class="slide-num mono">20 / 20</div>
 </section>
 
 <!-- ===================== JAVASCRIPT ===================== -->
