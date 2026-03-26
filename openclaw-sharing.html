@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的 AI 管家：OpenClaw（小龙虾）实践分享</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* === THEME VARIABLES === */
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: rgba(255,255,255,0.03);
+            --bg-card-hover: rgba(255,255,255,0.06);
+            --text-primary: #e8e8ec;
+            --text-secondary: #8888a0;
+            --text-dim: #555568;
+            --accent-red: #e63946;
+            --accent-red-glow: rgba(230,57,70,0.3);
+            --accent-blue: #4ecdc4;
+            --accent-blue-glow: rgba(78,205,196,0.25);
+            --border-subtle: rgba(255,255,255,0.06);
+            --font-display: 'Noto Sans SC', sans-serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --title-size: clamp(2rem, 6vw, 4.5rem);
+            --h2-size: clamp(1.3rem, 3.5vw, 2.4rem);
+            --h3-size: clamp(0.95rem, 2vw, 1.3rem);
+            --body-size: clamp(0.72rem, 1.35vw, 1rem);
+            --small-size: clamp(0.6rem, 0.95vw, 0.8rem);
+            --slide-padding: clamp(1.5rem, 4vw, 4rem);
+            --content-gap: clamp(0.5rem, 1.8vw, 1.4rem);
+            --ease-out-expo: cubic-bezier(0.16,1,0.3,1);
+            --duration-normal: 0.6s;
+        }
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+        /* === VIEWPORT BASE (MANDATORY) === */
+        html,body{height:100%;overflow-x:hidden}
+        html{scroll-snap-type:y mandatory;scroll-behavior:smooth}
+        body{background:var(--bg-primary);color:var(--text-primary);font-family:var(--font-body);font-size:var(--body-size);line-height:1.6;-webkit-font-smoothing:antialiased}
+        .slide{width:100vw;height:100vh;height:100dvh;overflow:hidden;scroll-snap-align:start;display:flex;flex-direction:column;position:relative}
+        .slide-content{flex:1;display:flex;flex-direction:column;justify-content:center;max-height:100%;overflow:hidden;padding:var(--slide-padding);position:relative;z-index:2}
+
+        /* === TYPOGRAPHY === */
+        h1{font-family:var(--font-display);font-size:var(--title-size);font-weight:900;line-height:1.15;letter-spacing:-0.02em}
+        h2{font-family:var(--font-display);font-size:var(--h2-size);font-weight:700;line-height:1.2;margin-bottom:var(--content-gap)}
+        h3{font-family:var(--font-display);font-size:var(--h3-size);font-weight:600;line-height:1.3}
+        .mono{font-family:var(--font-mono)}
+        .accent-red{color:var(--accent-red)}
+        .accent-blue{color:var(--accent-blue)}
+
+        /* === BACKGROUND EFFECTS === */
+        .bg-grid{background-image:linear-gradient(rgba(78,205,196,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(78,205,196,0.035) 1px,transparent 1px);background-size:60px 60px}
+        .bg-mesh::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 80%,rgba(230,57,70,0.12) 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(78,205,196,0.1) 0%,transparent 50%);z-index:0;pointer-events:none}
+        .bg-mesh-r::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 60%,rgba(230,57,70,0.13) 0%,transparent 50%),radial-gradient(ellipse at 10% 30%,rgba(78,205,196,0.07) 0%,transparent 40%);z-index:0;pointer-events:none}
+        .bg-mesh-b::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 40%,rgba(78,205,196,0.12) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(230,57,70,0.08) 0%,transparent 40%);z-index:0;pointer-events:none}
+
+        /* === SCANLINE EFFECT === */
+        @keyframes scanline{0%{top:-5%}100%{top:105%}}
+        .scanline::after{content:'';position:absolute;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--accent-blue-glow),transparent);animation:scanline 8s linear infinite;z-index:1;pointer-events:none}
+
+        /* === COMPONENTS === */
+        .slide-num{position:absolute;bottom:clamp(0.6rem,1.5vh,1.2rem);right:clamp(0.8rem,2vw,1.5rem);font-family:var(--font-mono);font-size:var(--small-size);color:var(--text-dim);z-index:5}
+        .section-label{font-family:var(--font-mono);font-size:var(--small-size);color:var(--accent-blue);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:clamp(0.2rem,0.6vw,0.5rem)}
+
+        /* Cards */
+        .card-grid{display:grid;gap:clamp(0.35rem,1vw,0.7rem)}
+        .cols-2{grid-template-columns:repeat(2,1fr)}
+        .cols-3{grid-template-columns:repeat(3,1fr)}
+        .fcard{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:clamp(6px,0.8vw,10px);padding:clamp(0.5rem,1.2vw,1rem);transition:background 0.3s,border-color 0.3s}
+        .fcard:hover{background:var(--bg-card-hover);border-color:rgba(255,255,255,0.1)}
+        .fcard .ci{font-size:clamp(1.1rem,2.2vw,1.6rem);margin-bottom:clamp(0.15rem,0.4vw,0.3rem);display:block}
+        .fcard .ct{font-weight:700;font-size:clamp(0.68rem,1.2vw,0.9rem);margin-bottom:clamp(0.05rem,0.2vw,0.15rem)}
+        .fcard .cd{font-size:var(--small-size);color:var(--text-secondary);line-height:1.4}
+
+        /* Bullet Lists */
+        .blist{list-style:none;display:flex;flex-direction:column;gap:clamp(0.25rem,0.7vh,0.55rem)}
+        .blist li{font-size:var(--body-size);color:var(--text-secondary);padding-left:clamp(0.9rem,1.8vw,1.3rem);position:relative;line-height:1.5}
+        .blist li::before{content:'';position:absolute;left:0;top:clamp(0.4rem,0.75vw,0.5rem);width:clamp(4px,0.4vw,5px);height:clamp(4px,0.4vw,5px);border-radius:50%;background:var(--accent-red)}
+        .blist li strong{color:var(--text-primary);font-weight:600}
+        .blist.blue li::before{background:var(--accent-blue)}
+
+        /* Tags */
+        .tag{display:inline-block;font-family:var(--font-mono);font-size:clamp(0.52rem,0.8vw,0.65rem);padding:clamp(1px,0.2vw,3px) clamp(5px,0.8vw,8px);border-radius:3px;background:rgba(78,205,196,0.1);color:var(--accent-blue);border:1px solid rgba(78,205,196,0.2)}
+        .tag.red{background:rgba(230,57,70,0.1);color:var(--accent-red);border-color:rgba(230,57,70,0.2)}
+
+        /* Highlight Box */
+        .hbox{background:linear-gradient(135deg,rgba(230,57,70,0.08),rgba(78,205,196,0.05));border-left:3px solid var(--accent-red);padding:clamp(0.5rem,1.2vw,1rem);border-radius:0 clamp(4px,0.6vw,6px) clamp(4px,0.6vw,6px) 0;margin-top:var(--content-gap)}
+        .hbox em{font-style:italic;font-weight:500;color:var(--text-primary)}
+
+        /* Architecture Center */
+        .arch-c{text-align:center;padding:clamp(0.4rem,1vw,0.8rem);background:linear-gradient(135deg,rgba(230,57,70,0.12),rgba(78,205,196,0.08));border:1px solid rgba(230,57,70,0.25);border-radius:clamp(6px,1vw,12px);font-weight:700;font-size:clamp(0.8rem,1.4vw,1.05rem);margin-bottom:var(--content-gap)}
+
+        /* Two-Column */
+        .two-col{display:grid;grid-template-columns:1fr 1fr;gap:clamp(0.8rem,2.5vw,2rem);align-items:start}
+
+        /* === ANIMATIONS === */
+        .reveal{opacity:0;transform:translateY(25px);transition:opacity var(--duration-normal) var(--ease-out-expo),transform var(--duration-normal) var(--ease-out-expo)}
+        .slide.visible .reveal{opacity:1;transform:translateY(0)}
+        .reveal:nth-child(1){transition-delay:0.05s}.reveal:nth-child(2){transition-delay:0.12s}.reveal:nth-child(3){transition-delay:0.19s}.reveal:nth-child(4){transition-delay:0.26s}.reveal:nth-child(5){transition-delay:0.33s}.reveal:nth-child(6){transition-delay:0.40s}.reveal:nth-child(7){transition-delay:0.47s}.reveal:nth-child(8){transition-delay:0.54s}
+        .reveal-s{opacity:0;transform:scale(0.92);transition:opacity 0.5s var(--ease-out-expo),transform 0.5s var(--ease-out-expo)}
+        .slide.visible .reveal-s{opacity:1;transform:scale(1)}
+
+        @keyframes tcursor{0%,100%{border-color:var(--accent-red)}50%{border-color:transparent}}
+        .typewriter-cursor{border-right:3px solid var(--accent-red);padding-right:3px;animation:tcursor 0.8s infinite}
+        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(clamp(-6px,-1.2vh,-12px))}}
+        .float{animation:float 4s ease-in-out infinite}
+
+        /* === TITLE SLIDE === */
+        .title-slide{align-items:center;justify-content:center;text-align:center}
+        .title-slide .slide-content{align-items:center}
+        .lobster{font-size:clamp(3rem,8vw,6.5rem);display:block;margin-bottom:clamp(0.4rem,1.5vh,1.2rem);filter:drop-shadow(0 0 30px var(--accent-red-glow))}
+        .title-main{background:linear-gradient(135deg,var(--accent-red),#ff6b7a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .title-sub{font-size:clamp(0.85rem,1.8vw,1.3rem);color:var(--text-secondary);font-weight:400;margin-top:clamp(0.2rem,0.8vh,0.6rem)}
+        .title-date{font-family:var(--font-mono);font-size:var(--small-size);color:var(--text-dim);margin-top:clamp(0.6rem,1.5vh,1.2rem);letter-spacing:0.05em}
+
+        /* === QA SLIDE === */
+        .qa-title{font-size:clamp(2.5rem,8vw,6rem);font-weight:900;background:linear-gradient(135deg,var(--accent-blue),var(--accent-red));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .qa-links{list-style:none;display:flex;flex-direction:column;gap:clamp(0.3rem,0.8vh,0.6rem);margin-top:var(--content-gap);text-align:center}
+        .qa-links li{font-family:var(--font-mono);font-size:var(--body-size);color:var(--text-secondary)}
+        .qa-links li .ql{color:var(--accent-blue);text-decoration:none;border-bottom:1px solid rgba(78,205,196,0.3)}
+
+        /* === NAV DOTS === */
+        .nav-dots{position:fixed;bottom:clamp(0.4rem,1.2vh,0.8rem);left:50%;transform:translateX(-50%);display:flex;gap:clamp(3px,0.4vw,6px);z-index:100;padding:clamp(3px,0.4vw,5px) clamp(6px,0.8vw,10px);background:rgba(10,10,15,0.85);backdrop-filter:blur(10px);border-radius:20px;border:1px solid var(--border-subtle)}
+        .nav-dot{width:clamp(5px,0.6vw,7px);height:clamp(5px,0.6vw,7px);border-radius:50%;background:var(--text-dim);border:none;cursor:pointer;transition:all 0.3s var(--ease-out-expo);padding:0}
+        .nav-dot.active{background:var(--accent-red);box-shadow:0 0 8px var(--accent-red-glow);transform:scale(1.4)}
+
+        /* === PROGRESS BAR === */
+        .progress-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--accent-red),var(--accent-blue));z-index:200;transition:width 0.3s var(--ease-out-expo);width:0}
+
+        /* === WATERMARK === */
+        .watermark{position:fixed;bottom:clamp(0.2rem,0.6vh,0.4rem);right:clamp(0.4rem,1.2vw,0.8rem);font-family:var(--font-mono);font-size:clamp(0.45rem,0.6vw,0.55rem);color:var(--text-dim);z-index:100;opacity:0.4}
+
+        /* === RESPONSIVE === */
+        @media(max-height:700px){:root{--slide-padding:clamp(0.75rem,3vw,2rem);--content-gap:clamp(0.35rem,1.2vw,0.8rem);--title-size:clamp(1.5rem,5vw,3rem);--h2-size:clamp(1.1rem,3vw,1.7rem)}}
+        @media(max-height:600px){:root{--slide-padding:clamp(0.5rem,2.5vw,1.2rem);--content-gap:clamp(0.25rem,0.8vw,0.5rem);--title-size:clamp(1.2rem,4.5vw,2rem);--body-size:clamp(0.65rem,1.1vw,0.85rem)}.nav-dots,.decorative{display:none}}
+        @media(max-height:500px){:root{--slide-padding:clamp(0.4rem,2vw,0.8rem);--title-size:clamp(1rem,3.5vw,1.5rem);--h2-size:clamp(0.85rem,2.5vw,1.2rem);--body-size:clamp(0.6rem,0.9vw,0.75rem)}}
+        @media(max-width:700px){.two-col{grid-template-columns:1fr}.cols-3{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:450px){.cols-2,.cols-3{grid-template-columns:1fr}}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.2s!important}html{scroll-behavior:auto}}
+    </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<nav class="nav-dots" id="navDots"></nav>
+<div class="watermark">Made with OpenClaw 🦞</div>
+
+<!-- ===================== SLIDE 1: COVER ===================== -->
+<section class="slide title-slide bg-grid scanline bg-mesh" data-slide="0">
+    <div class="slide-content">
+        <span class="lobster reveal float">🦞</span>
+        <h1 class="reveal"><span class="title-main typewriter-cursor" id="typeTarget"></span></h1>
+        <p class="title-sub reveal">OpenClaw（小龙虾）实践分享</p>
+    </div>
+    <div class="slide-num mono">01 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 2: WHAT IS OPENCLAW ===================== -->
+<section class="slide bg-grid bg-mesh-b" data-slide="1">
+    <div class="slide-content">
+        <span class="section-label reveal">Overview</span>
+        <h2 class="reveal">什么是 <span class="accent-red">OpenClaw</span>？</h2>
+        <ul class="blist reveal">
+            <li><strong>开源 AI Agent 框架</strong>，让 AI 成为你的私人管家</li>
+            <li><strong>7×24 全天候</strong>运行在 Mac mini 上，永不下线</li>
+            <li><strong>多 Agent 协作</strong>，各司其职，分工明确</li>
+            <li>多平台接入 <span class="tag">Telegram</span> <span class="tag">飞书</span> <span class="tag">Discord</span></li>
+            <li>官网 → <span class="mono accent-blue">openclaw.ai</span></li>
+        </ul>
+        <div class="hbox reveal">
+            <em>「一个人 + 一台 Mac mini + OpenClaw = 一支 AI 团队」</em>
+        </div>
+    </div>
+    <div class="slide-num mono">02 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 3: ARCHITECTURE ===================== -->
+<section class="slide bg-grid bg-mesh-r" data-slide="2">
+    <div class="slide-content">
+        <span class="section-label reveal">Architecture</span>
+        <h2 class="reveal">🏯 龙虾的<span class="accent-red">皇城</span></h2>
+        <div class="arch-c reveal">🏯 内务府 — 总管家 · 调度中枢 · 技术运维</div>
+        <div class="card-grid cols-3 reveal-s">
+            <div class="fcard"><span class="ci">🔭</span><div class="ct accent-blue">观星台</div><div class="cd">数据监控 · 信息流 · 公告追踪</div></div>
+            <div class="fcard"><span class="ci">⚔️</span><div class="ct accent-red">军机处</div><div class="cd">投资决策 · 定投日报 · 收益分析</div></div>
+            <div class="fcard"><span class="ci">🌸</span><div class="ct accent-blue">御花园</div><div class="cd">日常陪伴 · 科技新闻 · 生活助手</div></div>
+            <div class="fcard"><span class="ci">📚</span><div class="ct accent-red">文渊阁</div><div class="cd">知识库 · 读书笔记 · 书籍关联</div></div>
+            <div class="fcard"><span class="ci">🏥</span><div class="ct accent-blue">太医院</div><div class="cd">健康管理 · 运动数据 · 提醒</div></div>
+            <div class="fcard"><span class="ci">🎓</span><div class="ct accent-red">英语角</div><div class="cd">学习陪练 · 每日任务 · 打卡</div></div>
+        </div>
+    </div>
+    <div class="slide-num mono">03 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 4: NEW EMPLOYEE ===================== -->
+<section class="slide bg-grid bg-mesh" data-slide="3">
+    <div class="slide-content">
+        <span class="section-label reveal">Analogy</span>
+        <h2 class="reveal">相当于招了一个<span class="accent-red">新员工</span></h2>
+        <div class="card-grid cols-2 reveal-s">
+            <div class="fcard"><span class="ci">🧠</span><div class="ct accent-blue">智力超高</div><div class="cd">研究生、博士、Web3 专业级别——这样的人在市面上很难招到</div></div>
+            <div class="fcard"><span class="ci">💰</span><div class="ct accent-red">月费 $100-200</div><div class="cd">vs 真人多岗位月薪数万，一个顶六个</div></div>
+            <div class="fcard"><span class="ci">🚫</span><div class="ct accent-blue">零管理成本</div><div class="cd">不用面试、发工资、交社保、管考勤、做思想建设</div></div>
+            <div class="fcard"><span class="ci">⏰</span><div class="ct accent-red">7×24 待命</div><div class="cd">不抱怨、不摸鱼、随叫随到</div></div>
+        </div>
+        <div class="hbox reveal">
+            <em>「招人最贵的不是工资，是管理成本」</em>
+        </div>
+    </div>
+    <div class="slide-num mono">04 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 5: TRAINING ===================== -->
+<section class="slide bg-grid bg-mesh-r" data-slide="4">
+    <div class="slide-content">
+        <span class="section-label reveal">Training</span>
+        <h2 class="reveal">训练你的<span class="accent-blue">"新员工"</span></h2>
+        <ul class="blist reveal">
+            <li>新配置相当于<strong>一张白纸</strong>，对你的工作方式一无所知</li>
+            <li>需要长期训练，不断告诉他<strong>边界和规矩</strong></li>
+            <li>训练成果<strong>永不丢失</strong>——写进记忆文件，重启也记得</li>
+            <li><strong>可复制</strong>：一个 agent 的规范同步给所有 agent</li>
+            <li>搭配 <span class="tag">Skill</span> = 给员工报培训班，<strong>即装即用</strong></li>
+            <li>越用越顺，越来越懂你的<strong>工作方式和偏好</strong></li>
+        </ul>
+        <div class="hbox reveal">
+            <em>「训练成果写进记忆，永不丢失」</em>
+        </div>
+    </div>
+    <div class="slide-num mono">05 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 6: SHOWCASE ===================== -->
+<section class="slide bg-grid bg-mesh-b" data-slide="5">
+    <div class="slide-content">
+        <span class="section-label reveal">Showcase</span>
+        <h2 class="reveal">通过小龙虾做了<span class="accent-red">什么</span></h2>
+        <div class="card-grid cols-3 reveal-s">
+            <div class="fcard"><span class="ci">📡</span><div class="ct accent-blue">信息监控</div><div class="cd">Twitter 111 KOL + 四大交易所公告</div></div>
+            <div class="fcard"><span class="ci">💰</span><div class="ct accent-red">投资辅助</div><div class="cd">BTC 定投日报 + 收益分析 + 4h 会议总结</div></div>
+            <div class="fcard"><span class="ci">📚</span><div class="ct accent-blue">知识管理</div><div class="cd">Obsidian 知识库 + 读书笔记 + 网站备份</div></div>
+            <div class="fcard"><span class="ci">🛡️</span><div class="ct accent-red">安全运维</div><div class="cd">每夜巡检 + 配置备份 + 失败自动重试</div></div>
+            <div class="fcard"><span class="ci">🎓</span><div class="ct accent-blue">学习成长</div><div class="cd">英语每日打卡 + 课程体系</div></div>
+            <div class="fcard"><span class="ci">🎨</span><div class="ct accent-red">内容产出</div><div class="cd">信息图 + PPT + 教程 + 合同审查</div></div>
+        </div>
+    </div>
+    <div class="slide-num mono">06 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 7: INFO FLOW ===================== -->
+<section class="slide bg-grid bg-mesh-b" data-slide="6">
+    <div class="slide-content">
+        <span class="section-label reveal">Data Flow</span>
+        <h2 class="reveal"><span class="accent-blue">信息流</span>系统</h2>
+        <ul class="blist reveal">
+            <li>自建 Twitter 信息流：<strong>111 个 KOL</strong> + 深潮 TechFlow</li>
+            <li><strong>RSSHub Docker</strong> + Twitter List 一次抓取</li>
+            <li>AI 智能分流后推送至<strong>专属信息流频道</strong></li>
+            <li>每天 <span class="mono">5</span> 次定时推送至频道，自动过滤水贴</li>
+            <li><strong>零人工干预</strong>，全自动运行</li>
+        </ul>
+        <div class="hbox reveal">
+            <em>「信息不再淹没你，而是为你精选」</em>
+        </div>
+    </div>
+    <div class="slide-num mono">07 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 5: EXCHANGE MONITOR ===================== -->
+<section class="slide bg-grid bg-mesh-r" data-slide="7">
+    <div class="slide-content">
+        <span class="section-label reveal">Monitoring</span>
+        <h2 class="reveal">交易所<span class="accent-red">公告监控</span></h2>
+        <ul class="blist reveal">
+            <li>实时监控四大交易所（每 <span class="mono">3</span> 分钟）</li>
+            <li>覆盖：<span class="tag red">Binance</span> <span class="tag red">OKX</span> <span class="tag">Bybit</span> <span class="tag">Bitget</span></li>
+            <li>智能过滤：合约调参等噪音<strong>自动跳过</strong></li>
+            <li>自动推送到私人频道 + 冰糖私聊</li>
+            <li>重要公告自动生成<strong>信息图 + 收益分析</strong></li>
+        </ul>
+    </div>
+    <div class="slide-num mono">08 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 6: CRON TASKS ===================== -->
+<section class="slide bg-grid bg-mesh-b" data-slide="8">
+    <div class="slide-content">
+        <span class="section-label reveal">Automation</span>
+        <h2 class="reveal">自动化<span class="accent-blue">定时任务</span></h2>
+        <div class="two-col reveal">
+            <div>
+                <h3 style="margin-bottom:clamp(0.3rem,0.8vw,0.5rem)">系统 crontab <span class="tag">零 token</span></h3>
+                <ul class="blist blue">
+                    <li>公告监控（每 3 分钟）</li>
+                    <li>配置备份（每小时）</li>
+                    <li>GitHub 同步</li>
+                    <li>RSS 抓取</li>
+                    <li>健康检查</li>
+                </ul>
+            </div>
+            <div>
+                <h3 style="margin-bottom:clamp(0.3rem,0.8vw,0.5rem)">OpenClaw cron <span class="tag red">AI 能力</span></h3>
+                <ul class="blist">
+                    <li>信息流推送 ×4</li>
+                    <li>安全巡检（每夜）</li>
+                    <li>记忆维护</li>
+                    <li>定投日报（10:00）</li>
+                    <li>英语打卡提醒</li>
+                </ul>
+            </div>
+        </div>
+        <div class="hbox reveal">
+            <em>「能用脚本的不用 AI，省 token」</em>
+        </div>
+    </div>
+    <div class="slide-num mono">09 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 7: SECURITY ===================== -->
+<section class="slide bg-grid bg-mesh-r" data-slide="9">
+    <div class="slide-content">
+        <span class="section-label reveal">Security</span>
+        <h2 class="reveal"><span class="accent-red">安全</span>体系</h2>
+        <ul class="blist reveal">
+            <li>采用<strong>慢雾安全实践指南</strong>（SlowMist）</li>
+            <li>每夜自动巡检 <span class="mono accent-blue">13</span> 项指标</li>
+            <li>Skill / 插件安装<strong>自动审计</strong></li>
+            <li>灾备：关键配置<strong>每小时同步到 GitHub</strong></li>
+            <li>数据目录清晰隔离，<strong>权限最小化</strong></li>
+        </ul>
+    </div>
+    <div class="slide-num mono">10 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 8: IMAGE GENERATION ===================== -->
+<section class="slide bg-grid bg-mesh-b" data-slide="10">
+    <div class="slide-content">
+        <span class="section-label reveal">Visual</span>
+        <h2 class="reveal"><span class="accent-blue">出图</span>能力</h2>
+        <ul class="blist reveal">
+            <li><strong>HTML + 无头浏览器截图</strong>（DPI 4 高清）</li>
+            <li>统一设计风格（文人学术风 / 风格 B）</li>
+            <li>自动生成信息图：币安活动分析、收益测算</li>
+            <li>观星台学会了内务府的出图标准</li>
+        </ul>
+        <div class="hbox reveal">
+            <em>「不用 Midjourney，代码即设计」</em>
+        </div>
+    </div>
+    <div class="slide-num mono">11 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 9: KNOWLEDGE ===================== -->
+<section class="slide bg-grid bg-mesh-r" data-slide="11">
+    <div class="slide-content">
+        <span class="section-label reveal">Knowledge</span>
+        <h2 class="reveal"><span class="accent-red">知识</span>管理</h2>
+        <ul class="blist reveal">
+            <li><strong>文渊阁</strong>：读书笔记，书籍关联分析</li>
+            <li>记忆架构：<span class="tag">全局 MEMORY</span> + <span class="tag">Agent 独立记忆</span> + <span class="tag red">每日日志</span></li>
+            <li><strong>Obsidian 双向同步</strong> + GitHub Pages 发布</li>
+            <li>自动整理、自动归档</li>
+        </ul>
+        <div class="hbox reveal">
+            <em>「知识不在脑中，在系统里」</em>
+        </div>
+    </div>
+    <div class="slide-num mono">12 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 10: INVESTMENT ===================== -->
+<section class="slide bg-grid bg-mesh-b" data-slide="12">
+    <div class="slide-content">
+        <span class="section-label reveal">Investment</span>
+        <h2 class="reveal"><span class="accent-blue">投资</span>辅助</h2>
+        <ul class="blist reveal">
+            <li><strong>军机处</strong>：BTC 定投日报，每天 <span class="mono">10:00</span> 推送</li>
+            <li>代币监控：价格预警、持仓追踪</li>
+            <li>YouTube 视频总结：<span class="mono">4</span> 小时投资会议 → 分段文字摘要</li>
+            <li>本地语音转写（<span class="tag">mlx-whisper</span>），<strong>零 API 费用</strong></li>
+        </ul>
+        <div class="hbox reveal">
+            <em>「4 小时会议，20 分钟转写，5 分钟读完」</em>
+        </div>
+    </div>
+    <div class="slide-num mono">13 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 11: ENGLISH ===================== -->
+<section class="slide bg-grid bg-mesh-r" data-slide="13">
+    <div class="slide-content">
+        <span class="section-label reveal">Learning</span>
+        <h2 class="reveal"><span class="accent-red">英语</span>学习</h2>
+        <ul class="blist reveal">
+            <li><strong>英语角 Bot</strong>：每天推送学习任务</li>
+            <li>许岑方法论：语言是能力不是知识，核心是<strong>「猜」</strong></li>
+            <li>Peppa Pig <strong>不开字幕</strong>看剧法</li>
+            <li>每天 <span class="mono">08:00</span> 课程提醒 + <span class="mono">19:00</span> 打卡 + 周日复盘</li>
+        </ul>
+        <div class="hbox reveal">
+            <em>「AI 不只帮你工作，还帮你成长」</em>
+        </div>
+    </div>
+    <div class="slide-num mono">14 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 12: FEISHU ===================== -->
+<section class="slide bg-grid bg-mesh-b" data-slide="14">
+    <div class="slide-content">
+        <span class="section-label reveal">Integration</span>
+        <h2 class="reveal"><span class="accent-blue">飞书</span>集成</h2>
+        <ul class="blist reveal">
+            <li>接入飞书<strong>全套能力</strong>：文档、表格、日历、任务</li>
+            <li>用户身份操作（<span class="tag">OAuth</span>），不是机器人身份</li>
+            <li>支持：读写文档、多维表格、日程管理、消息搜索</li>
+        </ul>
+    </div>
+    <div class="slide-num mono">15 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 14: COST ===================== -->
+<section class="slide bg-grid bg-mesh-b" data-slide="15">
+    <div class="slide-content">
+        <span class="section-label reveal">Cost</span>
+        <h2 class="reveal">成本与<span class="accent-blue">效率</span></h2>
+        <div class="card-grid cols-2 reveal-s">
+            <div class="fcard"><span class="ci">🖥️</span><div class="ct">硬件</div><div class="cd">Mac mini（已有设备，零额外成本）</div></div>
+            <div class="fcard"><span class="ci">🤖</span><div class="ct">AI 模型</div><div class="cd">Claude Opus 通过 sub2api 转发</div></div>
+            <div class="fcard"><span class="ci">📐</span><div class="ct">省 Token 原则</div><div class="cd">能用脚本的不用 AI</div></div>
+            <div class="fcard"><span class="ci">⏱️</span><div class="ct">搭建周期</div><div class="cd">安装 + 对接大模型，即搭即用</div></div>
+        </div>
+        <div class="hbox reveal">
+            <em>「最贵的不是 AI，是你的时间」</em>
+        </div>
+    </div>
+    <div class="slide-num mono">16 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 17: AI AGE ===================== -->
+<section class="slide bg-grid bg-mesh-b" data-slide="16">
+    <div class="slide-content" style="align-items:center;text-align:center">
+        <span class="section-label reveal">Concept</span>
+        <h2 class="reveal" style="font-size:var(--h2-size)">你的 <span class="accent-red">AI 年龄</span>，几岁？</h2>
+        <p class="reveal" style="font-size:clamp(0.8rem,1.4vw,1.05rem);color:var(--text-secondary);max-width:36em;margin:0 auto;line-height:1.7">
+            不是你出生多少年，而是你<strong style="color:var(--text-primary)">真正把 AI 当成日常工具用起来</strong>，到今天，有几岁。
+        </p>
+        <div class="card-grid cols-2 reveal-s" style="max-width:42em;margin:var(--content-gap) auto 0">
+            <div class="fcard"><span class="ci">👶</span><div class="ct accent-blue">AI 年龄 0 岁</div><div class="cd">听说过 ChatGPT，偶尔打开玩玩</div></div>
+            <div class="fcard"><span class="ci">🧒</span><div class="ct accent-red">AI 年龄 1-2 岁</div><div class="cd">日常用 AI 搜索、写作、翻译</div></div>
+            <div class="fcard"><span class="ci">🧑‍💻</span><div class="ct accent-blue">AI 年龄 3-5 岁</div><div class="cd">用 AI 编程、搭建自动化工作流</div></div>
+            <div class="fcard"><span class="ci">🦞</span><div class="ct accent-red">AI 年龄 5+ 岁</div><div class="cd">部署 Agent 集群，AI 替你 7×24 运行</div></div>
+        </div>
+        <div class="hbox reveal" style="max-width:36em;margin:var(--content-gap) auto 0">
+            <em>「在 AI 年龄面前，生理年龄不重要——起跑线对所有人都一样」</em>
+        </div>
+    </div>
+    <div class="slide-num mono">17 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 18: AI INSIGHTS ===================== -->
+<section class="slide bg-grid bg-mesh-r" data-slide="17">
+    <div class="slide-content">
+        <span class="section-label reveal">Insights</span>
+        <h2 class="reveal">AI 行业<span class="accent-red">感悟</span>与布局</h2>
+        <div class="card-grid cols-2 reveal-s">
+            <div class="fcard"><span class="ci">🔄</span><div class="ct accent-blue">从聊天到操作系统</div><div class="cd">AI 不只是问答工具，而是 7×24 运行的个人操作系统</div></div>
+            <div class="fcard"><span class="ci">🧩</span><div class="ct accent-red">会用 ≠ 会部署</div><div class="cd">能部署 Agent 搭建自动化的人不到 1%，这就是机会</div></div>
+            <div class="fcard"><span class="ci">📚</span><div class="ct accent-blue">教程 & 社群</div><div class="cd">AI 使用教程、部署服务、Skill 评测——低门槛切入</div></div>
+            <div class="fcard"><span class="ci">🏗️</span><div class="ct accent-red">垂直 Agent</div><div class="cd">针对特定行业做定制 Agent：法律、财务、医疗、投研</div></div>
+        </div>
+        <div class="hbox reveal">
+            <em>「最好的学习方式是实践，最好的分享素材就是你的实践」</em>
+        </div>
+    </div>
+    <div class="slide-num mono">18 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 21: MAKE MONEY ===================== -->
+<section class="slide bg-grid bg-mesh" data-slide="18">
+    <div class="slide-content">
+        <span class="section-label reveal">Value</span>
+        <h2 class="reveal">小龙虾能不能<span class="accent-red">赚钱</span>？</h2>
+        <div class="card-grid cols-2 reveal-s">
+            <div class="fcard"><span class="ci">🔍</span><div class="ct accent-blue">能力放大器</div><div class="cd">帮你实现以前只有想法、但无法落地的东西，还能节省你的时间</div></div>
+            <div class="fcard"><span class="ci">⏱️</span><div class="ct accent-red">时间释放</div><div class="cd">把能自动化的事情都自动化，释放出来的时间做其他事情</div></div>
+        </div>
+        <div class="hbox reveal">
+            <em>「不是小龙虾在帮你赚钱，是你赚钱的效率提高了」</em>
+        </div>
+    </div>
+    <div class="slide-num mono">19 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 22: THINK AHEAD ===================== -->
+<section class="slide bg-grid bg-mesh-r" data-slide="19">
+    <div class="slide-content">
+        <span class="section-label reveal">Mindset</span>
+        <h2 class="reveal">往前想<span class="accent-blue">一步</span></h2>
+        <ul class="blist reveal">
+            <li>"用不到"不是工具的问题，是<strong>没往前想一步</strong></li>
+            <li>公众号发布流程都可以<strong>节省</strong></li>
+            <li>文章可以<strong>备份到自己的网站</strong></li>
+            <li>项目文档可以直接<strong>协作</strong></li>
+            <li>需求交给它，它还会<strong>主动挖掘更深层次的需求</strong></li>
+        </ul>
+        <div class="hbox reveal">
+            <em>「只有你想不到，没有他做不到」</em>
+        </div>
+    </div>
+    <div class="slide-num mono">20 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 23: SUMMARY ===================== -->
+<section class="slide bg-grid bg-mesh-r" data-slide="20">
+    <div class="slide-content">
+        <span class="section-label reveal">Summary</span>
+        <h2 class="reveal"><span class="accent-red">总结</span></h2>
+        <ul class="blist reveal">
+            <li>OpenClaw = 你的 <strong>AI 操作系统</strong></li>
+            <li><strong>多 Agent 协作</strong> > 单一助手</li>
+            <li>自动化<strong>一切可自动化的</strong></li>
+            <li>让 AI 做 AI 擅长的，人做人擅长的</li>
+        </ul>
+        <div class="hbox reveal">
+            <em>「让'以后再自动化'变成现在就实现」 —— OpenClaw 🦞</em>
+        </div>
+    </div>
+    <div class="slide-num mono">21 / 22</div>
+</section>
+
+<!-- ===================== SLIDE 20: QA ===================== -->
+<section class="slide title-slide bg-grid scanline bg-mesh" data-slide="21">
+    <div class="slide-content">
+        <h1 class="qa-title reveal">Questions?</h1>
+        <ul class="qa-links reveal">
+            <li>GitHub → <span class="ql">github.com/openclaw/openclaw</span></li>
+            <li>社区 → <span class="ql">discord.com/invite/clawd</span></li>
+            <li>Skill 市场 → <span class="ql">clawhub.com</span></li>
+        </ul>
+        <p class="title-date reveal" style="margin-top:clamp(1rem,2vh,2rem)">🦞 感谢聆听</p>
+    </div>
+    <div class="slide-num mono">22 / 22</div>
+</section>
+
+<!-- ===================== JAVASCRIPT ===================== -->
+<script>
+(function(){
+    'use strict';
+    const slides=document.querySelectorAll('.slide');
+    const navDotsC=document.getElementById('navDots');
+    const progressBar=document.getElementById('progressBar');
+    let current=0;
+
+    // Create nav dots
+    slides.forEach((_,i)=>{
+        const d=document.createElement('button');
+        d.className='nav-dot'+(i===0?' active':'');
+        d.setAttribute('aria-label','Slide '+(i+1));
+        d.addEventListener('click',()=>goTo(i));
+        navDotsC.appendChild(d);
+    });
+    const dots=navDotsC.querySelectorAll('.nav-dot');
+
+    function goTo(idx){
+        if(idx<0||idx>=slides.length)return;
+        current=idx;
+        slides[idx].scrollIntoView({behavior:'smooth'});
+        updateUI();
+    }
+    function updateUI(){
+        dots.forEach((d,i)=>d.classList.toggle('active',i===current));
+        slides.forEach((s,i)=>{
+            s.classList.toggle('visible',i===current);
+        });
+        progressBar.style.width=((current+1)/slides.length*100)+'%';
+    }
+
+    // Intersection Observer
+    const obs=new IntersectionObserver(entries=>{
+        entries.forEach(e=>{
+            if(e.isIntersecting){
+                const idx=parseInt(e.target.dataset.slide);
+                current=idx;
+                updateUI();
+            }
+        });
+    },{threshold:0.55});
+    slides.forEach(s=>obs.observe(s));
+
+    // Keyboard navigation
+    document.addEventListener('keydown',e=>{
+        if(e.key==='ArrowDown'||e.key==='ArrowRight'||e.key===' '){e.preventDefault();goTo(current+1)}
+        if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();goTo(current-1)}
+        if(e.key==='Home'){e.preventDefault();goTo(0)}
+        if(e.key==='End'){e.preventDefault();goTo(slides.length-1)}
+    });
+
+    // Typewriter effect for title
+    const tt=document.getElementById('typeTarget');
+    if(tt){
+        const text='我的 AI 管家';
+        let i=0;
+        function typeChar(){
+            if(i<text.length){tt.textContent+=text[i];i++;setTimeout(typeChar,120)}
+            else{tt.classList.remove('typewriter-cursor')}
+        }
+        setTimeout(typeChar,600);
+    }
+
+    // Init
+    updateUI();
+})();
+</script>
+
+</body>
+</html>
