@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我养了一只「电子龙虾」：一个普通人的 AI 管家实践</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: #f5f5f5;
+    color: #333;
+    line-height: 1.8;
+  }
+
+  .article-wrapper {
+    max-width: 680px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 30px 24px 60px;
+  }
+
+  /* 标题 */
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a1a;
+    text-align: center;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 36px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e74c3c;
+    display: inline-block;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+    margin: 28px 0 12px;
+  }
+
+  p {
+    font-size: 15px;
+    margin: 12px 0;
+    text-align: justify;
+  }
+
+  strong { color: #1a1a1a; }
+
+  /* 引言框 */
+  .intro-box {
+    background: linear-gradient(135deg, #fff5f5, #ffe8e8);
+    border-left: 4px solid #e74c3c;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 20px 0 28px;
+    font-size: 14px;
+    color: #666;
+  }
+  .intro-box .emoji { font-size: 20px; margin-right: 6px; }
+
+  /* 分割线 */
+  hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #ddd, transparent);
+    margin: 32px 0;
+  }
+
+  /* 引用块 */
+  blockquote {
+    border-left: 3px solid #e74c3c;
+    padding: 8px 16px;
+    margin: 16px 0;
+    color: #666;
+    font-size: 14px;
+    background: #fafafa;
+    border-radius: 0 6px 6px 0;
+  }
+
+  /* 对比表格 */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .compare-table th {
+    background: #e74c3c;
+    color: #fff;
+    padding: 10px 12px;
+    text-align: center;
+    font-weight: 600;
+  }
+  .compare-table th:first-child { background: #999; }
+  .compare-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+  }
+  .compare-table tr:nth-child(even) { background: #fafafa; }
+
+  /* 架构树 */
+  .arch-tree {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    color: #e0e0e0;
+    padding: 20px 24px;
+    border-radius: 12px;
+    margin: 16px 0;
+    font-family: "SF Mono", "Fira Code", Menlo, monospace;
+    font-size: 14px;
+    line-height: 2;
+  }
+  .arch-tree .root { color: #ffd700; font-weight: 700; font-size: 15px; }
+  .arch-tree .branch { color: #87ceeb; }
+  .arch-tree .leaf { color: #98fb98; }
+
+  /* 配置卡片 */
+  .config-list {
+    list-style: none;
+    margin: 16px 0;
+  }
+  .config-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px 16px;
+    margin: 8px 0;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border-left: 4px solid #e74c3c;
+  }
+  .config-item .icon { font-size: 24px; margin-right: 12px; flex-shrink: 0; }
+  .config-item .text { flex: 1; }
+  .config-item .name { font-weight: 700; color: #1a1a1a; font-size: 15px; }
+  .config-item .arrow { color: #999; margin: 0 6px; }
+  .config-item .role { color: #e74c3c; font-weight: 600; }
+  .config-item .desc { font-size: 13px; color: #666; margin-top: 2px; }
+
+  /* 功能总览 */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .feature-card {
+    padding: 14px;
+    border-radius: 10px;
+    text-align: center;
+  }
+  .feature-card .icon { font-size: 28px; display: block; margin-bottom: 6px; }
+  .feature-card .title { font-weight: 700; font-size: 14px; color: #1a1a1a; }
+  .feature-card .detail { font-size: 12px; color: #666; margin-top: 4px; }
+  .fc-blue { background: #e8f4fd; }
+  .fc-red { background: #fde8e8; }
+  .fc-green { background: #e8fde8; }
+  .fc-yellow { background: #fdf8e8; }
+  .fc-purple { background: #f0e8fd; }
+  .fc-orange { background: #fdf0e8; }
+
+  /* 步骤 */
+  .step-list {
+    list-style: none;
+    margin: 16px 0;
+    counter-reset: step;
+  }
+  .step-item {
+    display: flex;
+    align-items: flex-start;
+    margin: 10px 0;
+    padding: 10px 14px;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+  .step-num {
+    background: #e74c3c;
+    color: #fff;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+  .step-text { font-size: 14px; flex: 1; }
+
+  /* 两列对比 */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .col-box {
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+  .col-box .col-title { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+  .col-box ul { list-style: none; padding: 0; }
+  .col-box li { padding: 2px 0; }
+  .col-box li::before { content: "• "; color: #999; }
+  .col-blue { background: #e8f4fd; }
+  .col-red { background: #fde8e8; }
+
+  /* 成本卡片 */
+  .cost-list {
+    list-style: none;
+    margin: 16px 0;
+  }
+  .cost-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px 16px;
+    margin: 6px 0;
+    border-radius: 8px;
+    background: #f8f9fa;
+    font-size: 14px;
+  }
+  .cost-item .icon { font-size: 22px; margin-right: 10px; }
+  .cost-item .label { font-weight: 700; color: #1a1a1a; margin-right: 6px; }
+
+  /* 高亮引用 */
+  .highlight-quote {
+    background: linear-gradient(135deg, #fff5f5, #ffe8e8);
+    padding: 16px 20px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #c0392b;
+    margin: 20px 0;
+  }
+
+  /* 总结框 */
+  .summary-box {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: #fff;
+    padding: 24px;
+    border-radius: 12px;
+    margin: 20px 0;
+  }
+  .summary-box .item {
+    display: flex;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 15px;
+  }
+  .summary-box .item .icon { font-size: 20px; margin-right: 10px; }
+  .summary-box .slogan {
+    text-align: center;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.3);
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  /* 链接区 */
+  .links-section {
+    background: #f8f9fa;
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+    font-size: 14px;
+  }
+  .links-section a {
+    color: #e74c3c;
+    text-decoration: none;
+  }
+  .links-section p { margin: 6px 0; }
+
+  /* 免责 */
+  .disclaimer {
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+    margin-top: 30px;
+  }
+
+  /* 阶段标签 */
+  .phase {
+    display: inline-block;
+    background: #e74c3c;
+    color: #fff;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-right: 6px;
+  }
+
+  /* 效果高亮 */
+  .effect-box {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    padding: 16px 20px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    margin: 16px 0;
+  }
+
+  @media (max-width: 480px) {
+    .article-wrapper { padding: 20px 16px 40px; }
+    h1 { font-size: 20px; }
+    h2 { font-size: 17px; }
+    .feature-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .two-col { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .arch-tree { font-size: 13px; padding: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="article-wrapper">
+
+<h1>🦞 我养了一只「电子龙虾」<br>一个普通人的 AI 管家实践</h1>
+
+<div class="intro-box">
+  <span class="emoji">🦞</span> 本文基于真实使用经验，分享我如何用开源项目 OpenClaw（小龙虾）搭建了一套 7×24 运行的 AI 管家系统。不卖课，不带货，纯粹的踩坑记录。
+</div>
+
+<h2>起因：ChatGPT 用腻了</h2>
+
+<p>说实话，ChatGPT 我用了一年多，从一开始的惊艳到后来的麻木，大概经历了三个阶段：</p>
+
+<p><span class="phase">第一阶段</span> <strong>哇，好厉害！</strong> 什么都想问它，写邮件、翻译、写代码。</p>
+
+<p><span class="phase">第二阶段</span> <strong>嗯，也就那样。</strong> 你问它才回答，不问就不理你。关掉浏览器就什么都没了。</p>
+
+<p><span class="phase">第三阶段</span> <strong>我想要更多。</strong> 能不能不用我问，它主动帮我盯着一些事情？能不能记住我之前说过的话？能不能帮我自动化一些每天重复做的事？</p>
+
+<p>直到我遇到了 <strong>OpenClaw</strong> ——一个开源的 AI Agent 框架。</p>
+
+<hr>
+
+<h2>ChatGPT vs OpenClaw：一句话说清区别</h2>
+
+<p>如果把 ChatGPT 比作一个<strong>客服热线</strong>——你打电话它才接，挂了电话它就把你忘了。</p>
+
+<p>那 OpenClaw 就是一个<strong>住在你电脑里的员工</strong>——7天24小时在岗，你不说话它也会主动巡视，遇到重要事情主动通知你，而且会记住你说过的每一个偏好。</p>
+
+<table class="compare-table">
+  <tr><th></th><th>💬 ChatGPT</th><th>🦞 OpenClaw</th></tr>
+  <tr><td><strong>交互</strong></td><td>你问它答，关掉就没了</td><td>7×24 运行，主动推消息</td></tr>
+  <tr><td><strong>记忆</strong></td><td>关掉浏览器就忘了</td><td>持久记忆，越用越懂你</td></tr>
+  <tr><td><strong>主动性</strong></td><td>被动等你提问</td><td>主动巡检、推送、提醒</td></tr>
+  <tr><td><strong>自动化</strong></td><td>不支持</td><td>定时任务、自动化工作流</td></tr>
+</table>
+
+<hr>
+
+<h2>🏯 我搭了一座「皇城」</h2>
+
+<p>这个比喻可能有点中二，但确实是我现在的架构——我给每个 AI Agent 取了古风名字，然后按分工组成了一个小朝廷：</p>
+
+<div class="arch-tree">
+  <div class="root">🏯 内务府（总管家 · 调度中枢）</div>
+  <div class="branch">├── <span class="leaf">🔭 观星台</span>（数据监控 · 信息流）</div>
+  <div class="branch">├── <span class="leaf">⚔️ 军机处</span>（投资决策 · 定投日报）</div>
+  <div class="branch">├── <span class="leaf">🌸 御花园</span>（日常陪伴 · 生活助手）</div>
+  <div class="branch">├── <span class="leaf">📚 文渊阁</span>（知识库 · 读书笔记）</div>
+  <div class="branch">├── <span class="leaf">🏥 太医院</span>（健康管理 · 运动数据）</div>
+  <div class="branch">└── <span class="leaf">🎓 英语角</span>（学习陪练 · 每日打卡）</div>
+</div>
+
+<p><strong>内务府</strong>是总管家，负责调度其他所有 Agent，也是我日常打交道最多的。其他六个 Agent 各管一块，互不干扰。</p>
+
+<p>你可能会问：搞这么多 Agent 干嘛？一个不够吗？</p>
+
+<p>答案是：<strong>专人专事，效率更高</strong>。就像公司里不会让财务去写代码，也不会让程序员去跑销售。每个 Agent 有自己的记忆、自己的规则、自己的定时任务。</p>
+
+<hr>
+
+<h2>💡 配置你的「员工」：比带新人还简单</h2>
+
+<p>OpenClaw 的配置方式很直觉——用几个 Markdown 文件来「教」你的 AI 员工。</p>
+
+<ul class="config-list">
+  <li class="config-item">
+    <span class="icon">🔥</span>
+    <div class="text">
+      <span class="name">Soul.md</span> <span class="arrow">→</span> <span class="role">企业文化手册</span>
+      <div class="desc">定义它的性格和原则：做事风格、沟通方式、底线规矩</div>
+    </div>
+  </li>
+  <li class="config-item">
+    <span class="icon">👤</span>
+    <div class="text">
+      <span class="name">User.md</span> <span class="arrow">→</span> <span class="role">入职介绍</span>
+      <div class="desc">告诉它你是谁：你的身份、偏好、工作习惯</div>
+    </div>
+  </li>
+  <li class="config-item">
+    <span class="icon">🧠</span>
+    <div class="text">
+      <span class="name">Memory.md</span> <span class="arrow">→</span> <span class="role">长期记忆</span>
+      <div class="desc">规则、决策、经验教训。重启不丢失，越用越懂你</div>
+    </div>
+  </li>
+  <li class="config-item">
+    <span class="icon">📋</span>
+    <div class="text">
+      <span class="name">Agents.md</span> <span class="arrow">→</span> <span class="role">工作手册</span>
+      <div class="desc">分工规则、协作流程、通用规范。所有员工统一遵守</div>
+    </div>
+  </li>
+  <li class="config-item">
+    <span class="icon">💓</span>
+    <div class="text">
+      <span class="name">Heartbeat.md</span> <span class="arrow">→</span> <span class="role">巡检清单</span>
+      <div class="desc">定时主动检查什么、推送什么、什么时候安静</div>
+    </div>
+  </li>
+  <li class="config-item">
+    <span class="icon">🎓</span>
+    <div class="text">
+      <span class="name">Skill</span> <span class="arrow">→</span> <span class="role">培训班</span>
+      <div class="desc">即装即用的专业能力包，装上就会</div>
+    </div>
+  </li>
+</ul>
+
+<blockquote>配置越细致，员工越好用——就像带新人，前期投入决定后期效率。</blockquote>
+
+<hr>
+
+<h2>🔧 它到底帮我做了什么？</h2>
+
+<p>这部分是重点。先上总览：</p>
+
+<div class="feature-grid">
+  <div class="feature-card fc-blue">
+    <span class="icon">📡</span>
+    <div class="title">信息监控</div>
+    <div class="detail">Twitter 111 KOL<br>四大交易所公告</div>
+  </div>
+  <div class="feature-card fc-red">
+    <span class="icon">💰</span>
+    <div class="title">投资辅助</div>
+    <div class="detail">BTC 定投日报<br>收益分析 · 会议总结</div>
+  </div>
+  <div class="feature-card fc-green">
+    <span class="icon">📚</span>
+    <div class="title">知识管理</div>
+    <div class="detail">Obsidian 知识库<br>读书笔记 · 网站备份</div>
+  </div>
+  <div class="feature-card fc-yellow">
+    <span class="icon">🛡️</span>
+    <div class="title">安全运维</div>
+    <div class="detail">每夜巡检 · 配置备份<br>失败自动重试</div>
+  </div>
+  <div class="feature-card fc-purple">
+    <span class="icon">🎓</span>
+    <div class="title">学习成长</div>
+    <div class="detail">英语每日打卡<br>课程体系</div>
+  </div>
+  <div class="feature-card fc-orange">
+    <span class="icon">🎨</span>
+    <div class="title">内容产出</div>
+    <div class="detail">信息图 · PPT<br>教程 · 合同审查</div>
+  </div>
+</div>
+
+<h3>📡 信息流系统：再也不用刷推特了</h3>
+
+<p>这是我最得意的一个功能。</p>
+
+<p>做加密货币投资，最痛苦的事情之一就是<strong>信息焦虑</strong>——推特上几百个 KOL，每天发几千条推文，你不看怕错过什么，看了又全是水。</p>
+
+<p>我的解决方案：</p>
+
+<ul class="step-list">
+  <li class="step-item"><span class="step-num">1</span><span class="step-text"><strong>自建 RSSHub</strong>（Docker 部署），通过 Twitter List 一次性抓取 111 个 KOL 的推文</span></li>
+  <li class="step-item"><span class="step-num">2</span><span class="step-text"><strong>AI 智能分流</strong>：小龙虾读完所有推文，自动过滤水贴、广告、无意义互动</span></li>
+  <li class="step-item"><span class="step-num">3</span><span class="step-text"><strong>分类推送</strong>到我的专属 Telegram 频道</span></li>
+  <li class="step-item"><span class="step-num">4</span><span class="step-text">每天 <strong>5 次定时推送</strong>（07:00 / 11:00 / 13:00 / 17:00 / 19:00）</span></li>
+</ul>
+
+<div class="effect-box">从每天刷 2 小时推特 → 每天花 10 分钟看精选推送</div>
+
+<blockquote>信息不再淹没你，而是为你精选。</blockquote>
+
+<h3>📊 交易所公告监控：3 分钟内推送</h3>
+
+<p>四大交易所（Binance、OKX、Bybit、Bitget）的公告，每 3 分钟检查一次。</p>
+
+<p>关键在于<strong>智能过滤</strong>——合约参数调整、维护通知之类的噪音自动跳过，只推送真正重要的：新币上线、空投活动、重大政策变更。</p>
+
+<p>重要公告还会自动生成信息图和收益分析，直接推送到私聊和频道。</p>
+
+<h3>⚙️ 自动化定时任务：能用脚本的不用 AI</h3>
+
+<p>这是我踩坑最多、也学到最多的地方。我的定时任务分两类：</p>
+
+<div class="two-col">
+  <div class="col-box col-blue">
+    <div class="col-title">🖥️ 系统 crontab（零 Token）</div>
+    <ul>
+      <li>公告监控（每 3 分钟）</li>
+      <li>配置备份（每小时）</li>
+      <li>GitHub 同步</li>
+      <li>RSS 抓取</li>
+      <li>健康检查</li>
+    </ul>
+  </div>
+  <div class="col-box col-red">
+    <div class="col-title">🤖 OpenClaw cron（AI 能力）</div>
+    <ul>
+      <li>信息流推送 ×4</li>
+      <li>安全巡检（每夜）</li>
+      <li>记忆维护</li>
+      <li>定投日报（10:00）</li>
+      <li>英语打卡提醒</li>
+    </ul>
+  </div>
+</div>
+
+<p>核心原则：<strong>能用脚本的不用 AI，省 Token</strong>。</p>
+
+<p>公告抓取、RSS 更新这些事情，用 Shell 脚本就能搞定，没必要调用大模型。只有需要「理解」和「判断」的任务，才用 OpenClaw 的 AI cron。</p>
+
+<h3>💰 投资辅助：4 小时会议，5 分钟读完</h3>
+
+<p>这个功能救了我不少时间。</p>
+
+<p>• <strong>BTC 定投日报</strong>：军机处每天 10:00 推送，包含当日价格、定投收益、市场情绪</p>
+<p>• <strong>代币监控</strong>：价格预警、持仓追踪</p>
+<p>• <strong>YouTube 视频总结</strong>：4 小时的投资会议，先用本地 mlx-whisper 转写（零 API 费用），再让 AI 分段总结</p>
+
+<div class="highlight-quote">4 小时会议，20 分钟转写，5 分钟读完</div>
+
+<h3>🛡️ 安全体系：采用慢雾实践指南</h3>
+
+<p>安全这块我比较认真。</p>
+
+<p>• 采用 <strong>SlowMist（慢雾）安全实践指南</strong></p>
+<p>• 每夜自动巡检 <strong>13 项安全指标</strong></p>
+<p>• Skill 和插件安装时<strong>自动审计</strong></p>
+<p>• 关键配置<strong>每小时同步到 GitHub</strong>（灾备）</p>
+<p>• 数据目录清晰隔离，<strong>权限最小化</strong></p>
+
+<h3>🎓 英语学习：AI 不只帮你工作，还帮你成长</h3>
+
+<p>这个是意外之喜。</p>
+
+<p>我用许岑老师的方法论——语言是能力不是知识，核心是<strong>「猜」</strong>。具体操作是看 Peppa Pig（小猪佩奇），不开字幕。</p>
+
+<p>英语角 Bot 帮我：</p>
+<p>• 每天 08:00 推送课程任务</p>
+<p>• 每天 19:00 督促打卡</p>
+<p>• 每周日总结复盘</p>
+
+<p>虽然听起来简单，但<strong>坚持才是最难的</strong>，有个 Bot 每天催你，确实有效。</p>
+
+<hr>
+
+<h2>💸 成本：最贵的不是 AI，是你的时间</h2>
+
+<p>很多人关心成本，我直说：</p>
+
+<ul class="cost-list">
+  <li class="cost-item"><span class="icon">🖥️</span><span class="label">硬件：</span>Mac mini（家里已有的设备，零额外成本）</li>
+  <li class="cost-item"><span class="icon">🤖</span><span class="label">AI 模型：</span>Claude Opus，月费 $100-200（取决于使用量）</li>
+  <li class="cost-item"><span class="icon">📐</span><span class="label">省钱原则：</span>能用脚本的不用 AI，定时任务能 crontab 跑的不走 AI cron</li>
+  <li class="cost-item"><span class="icon">⏱️</span><span class="label">搭建周期：</span>安装 + 对接大模型，即搭即用。调教配置需要持续迭代</li>
+</ul>
+
+<p>换个角度算：一个 AI 管家，月费 $100-200，相当于一个<strong>全能实习生</strong>的价格，但它 7×24 待命、不抱怨、不摸鱼、随叫随到，而且每个专业都没有短板。</p>
+
+<blockquote>招人最贵的不是工资，是管理成本。</blockquote>
+
+<hr>
+
+<h2>🤔 小龙虾能赚钱吗？</h2>
+
+<p>这是被问最多的问题。我的回答：</p>
+
+<p><strong>它不直接帮你赚钱，但它提高你赚钱的效率。</strong></p>
+
+<div class="two-col">
+  <div class="col-box col-blue">
+    <div class="col-title">🔍 能力放大器</div>
+    <p>帮你实现以前只有想法、但无法落地的东西，还能节省你的时间</p>
+  </div>
+  <div class="col-box col-red">
+    <div class="col-title">⏱️ 时间释放</div>
+    <p>把能自动化的事情都自动化，释放出来的时间做其他事情</p>
+  </div>
+</div>
+
+<p>比如这篇文章的 PPT，就是小龙虾帮我做的。信息流推送、投资日报、英语打卡——这些事情以前每天至少占我 2-3 小时，现在几乎零人工干预。</p>
+
+<hr>
+
+<h2>没有小龙虾，也有使用场景</h2>
+
+<p>你可能觉得「我又不炒币，用不到这些」。</p>
+
+<p>但换个角度想：</p>
+
+<p>• 公众号发布流程可以<strong>全自动化</strong>——排版、发布、多平台同步</p>
+<p>• 文章可以<strong>自动备份到自己的网站</strong></p>
+<p>• 项目文档可以直接<strong>多人协作</strong></p>
+<p>• 给它一个需求，它不只完成任务，还会<strong>主动挖掘更深层次的需求</strong></p>
+
+<p>「用不到」不是工具的问题，是<strong>没往前想一步</strong>。</p>
+
+<blockquote>只有你想不到，没有它做不到。</blockquote>
+
+<hr>
+
+<h2>总结</h2>
+
+<div class="summary-box">
+  <div class="item"><span class="icon">🦞</span> OpenClaw = 你的 <strong>AI 操作系统</strong></div>
+  <div class="item"><span class="icon">🤝</span> <strong>多 Agent 协作</strong> &gt; 单一助手</div>
+  <div class="item"><span class="icon">⚡</span> 自动化<strong>一切可自动化的</strong></div>
+  <div class="item"><span class="icon">🧠</span> 让 AI 做 AI 擅长的，人做人擅长的</div>
+  <div class="slogan">「让'以后再自动化'变成现在就实现」</div>
+</div>
+
+<div class="links-section">
+  <p><strong>📌 相关链接</strong></p>
+  <p>• GitHub: <a href="https://github.com/openclaw/openclaw">github.com/openclaw/openclaw</a></p>
+  <p>• 社区: <a href="https://discord.com/invite/clawd">discord.com/invite/clawd</a></p>
+  <p>• Skill 市场: <a href="https://clawhub.com">clawhub.com</a></p>
+</div>
+
+<p class="disclaimer">本文基于个人使用经验，不构成任何投资或购买建议。<br>OpenClaw 是开源项目，使用需要一定技术基础。</p>
+
+</div>
+</body>
+</html>
