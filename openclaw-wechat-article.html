@@ -541,6 +541,7 @@
 <p>• <strong>BTC 定投日报</strong>：军机处每天 10:00 推送，包含当日价格、定投收益、市场情绪</p>
 <p>• <strong>代币监控</strong>：价格预警、持仓追踪</p>
 <p>• <strong>YouTube 视频总结</strong>：4 小时的投资会议，先用本地 mlx-whisper 转写（零 API 费用），再让 AI 分段总结</p>
+<p>• <strong>一句话投研</strong>：告诉它一个项目名，它就直接在我的 Mac 上控制浏览器，自动访问各个网站收集信息，最终生成一份完整的投研报告。这个流程以后还会封装成 Skill，规定好先查哪些网站、再查哪些数据源，一句话触发整套流程</p>
 
 <div class="highlight-quote">4 小时会议，20 分钟转写，5 分钟读完</div>
 
@@ -575,12 +576,13 @@
 
 <ul class="cost-list">
   <li class="cost-item"><span class="icon">🖥️</span><span class="label">硬件：</span>Mac mini（家里已有的设备，零额外成本）</li>
-  <li class="cost-item"><span class="icon">🤖</span><span class="label">AI 模型：</span>Claude Opus，月费 $100-200（取决于使用量）</li>
+  <li class="cost-item"><span class="icon">🤖</span><span class="label">AI 模型：</span>通过 sub2api 中转站使用 Claude Opus。两周约 1.1 亿 token，实际消耗 ~$1.5。月订阅 $100 白天双倍消耗不太够用，后续可能升到 $200/月</li>
+  <li class="cost-item"><span class="icon">🐳</span><span class="label">服务部署：</span>RSSHub 等服务全部 Docker 化，安装卸载干净，系统维护靠 Docker Compose 一键管理</li>
   <li class="cost-item"><span class="icon">📐</span><span class="label">省钱原则：</span>能用脚本的不用 AI，定时任务能 crontab 跑的不走 AI cron</li>
   <li class="cost-item"><span class="icon">⏱️</span><span class="label">搭建周期：</span>安装 + 对接大模型，即搭即用。调教配置需要持续迭代</li>
 </ul>
 
-<p>换个角度算：一个 AI 管家，月费 $100-200，相当于一个<strong>全能实习生</strong>的价格，但它 7×24 待命、不抱怨、不摸鱼、随叫随到，而且每个专业都没有短板。</p>
+<p>换个角度算：一个 AI 管家，月费 $100-200，相当于一个<strong>全能实习生</strong>的价格，但它 7×24 待命、不抱怨、不摸鱼、随叫随到，而且每个专业都没有短板。实际上有了 sub2api 这样的中转站，token 消耗比你想象的要便宜得多。</p>
 
 <blockquote>招人最贵的不是工资，是管理成本。</blockquote>
 
@@ -611,12 +613,16 @@
 
 <p>你可能觉得「我又不炒币，用不到这些」。</p>
 
-<p>但换个角度想：</p>
+<p>但换个角度想——比如现在好多人都在写公众号：</p>
 
-<p>• 公众号发布流程可以<strong>全自动化</strong>——排版、发布、多平台同步</p>
-<p>• 文章可以<strong>自动备份到自己的网站</strong></p>
-<p>• 项目文档可以直接<strong>多人协作</strong></p>
-<p>• 给它一个需求，它不只完成任务，还会<strong>主动挖掘更深层次的需求</strong></p>
+<p>• <strong>公众号全流程自动化</strong>：把素材和文章发给小龙虾，它对接公众号 API，自动生成封面图、排版内容、直接发到草稿箱——你只需要点一下「发布」</p>
+<p>• <strong>敏感词防删 + 自动备份</strong>：公众号文章有时会因为敏感词被删，小龙虾可以帮你建一个个人博客，或者自动备份到 GitHub，文章永远不会丢</p>
+<p>• <strong>飞书 API 对接</strong>：直接操作你的在线文档，投研报告、项目文档都能自动化处理</p>
+<p>• <strong>Skill 封装</strong>：把重复的工作流程封装成 Skill——以后来了一个新项目，一句话告诉它项目名，它就自动走完整个投研流程</p>
+<p>• <strong>深层需求挖掘</strong>：给它一个需求，它不只完成任务，还会主动挖掘更深层次的需求。比如让它帮你做开发，它会反过来问你有没有考虑过某些场景</p>
+<p>• <strong>学习 + 反向约束</strong>：让它读一些好文章，学习完帮你总结存到知识库。甚至可以让它反向约束你的行为——比如消费预算、作息规律</p>
+
+<p>总之，你手机上和电脑上的工作，它基本都能替你完成。</p>
 
 <p>「用不到」不是工具的问题，是<strong>没往前想一步</strong>。</p>
 
